@@ -7,7 +7,7 @@
 . $PSScriptRoot/utils.ps1
 EnsureTopDirectory
 
-Set-Location -Path $PSScriptRoot/..
+Set-Location -Path $TOP
 
 $ApacheLicenseHeader = @'
 /**

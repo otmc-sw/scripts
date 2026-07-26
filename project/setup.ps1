@@ -7,18 +7,16 @@
 . $PSScriptRoot/utils.ps1
 EnsureTopDirectory
 
-Set-Location $PSScriptRoot/..
-
 try {
-    Write-Host ">>> 💻 Setting up Frontend ..." -ForegroundColor Green
-    Set-Location frontend
+    Write-Host "### 💻 Setting up Frontend ..." -ForegroundColor Green
+    Set-Location $TOP/frontend
     npm install
     npm audit fix
 
-    Write-Host ">>> 🧪 Setting up Playwright ..." -ForegroundColor Green
-    Set-Location $PSScriptRoot/../tests/playwright
+    Write-Host "### 🧪 Setting up Playwright ..." -ForegroundColor Green
+    Set-Location $TOP/tests/playwright
     npm install
     npm audit fix
 } finally {
-    Set-Location $PSScriptRoot/..
+    Set-Location $TOP
 }

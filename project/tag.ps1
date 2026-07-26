@@ -8,66 +8,63 @@
 EnsureTopDirectory
 
 Param(
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true, Position = 0, HelpMessage = "Action: 'b' (build tag) or 'r' (reset branch to tag)")]
+    [ValidateSet("b", "r")]
     [string]$Action,
 
+    [Parameter(Mandatory = $true, Position = 1, HelpMessage = "Tag name is required")]
+    [ValidateNotNullOrEmpty()]
     [string]$TagName,
 
-    [string]$Commit
+    [Parameter(Position = 2)]
+    [string]$Commit = "HEAD"
 )
 
-function Info($msg)     { Write-Host $msg -ForegroundColor Blue }
-function Success($msg)  { Write-Host $msg -ForegroundColor Green }
-function ErrorMsg($msg) { Write-Host $msg -ForegroundColor Red }
+function Info([string]$msg)    { Write-Host $msg -ForegroundColor Blue }
+function Success([string]$msg) { Write-Host $msg -ForegroundColor Green }
+function ErrorMsg([string]$msg) { Write-Host $msg -ForegroundColor Red }
+
+function Assert-GitSuccess([string]$errorMessage) {
+    if ($LASTEXITCODE -ne 0) {
+        ErrorMsg "❌ $errorMessage"
+        exit $LASTEXITCODE
+    }
+}
 
 Write-Host "+++ 📚 Welcome to Source Tagger +++" -ForegroundColor Cyan
 
-if ($Action -eq "b") {
+switch ($Action) {
+    "b" {
+        Info "💡 Force creating tag '$TagName' at commit '$Commit'..."
+        git tag -f $TagName $Commit
+        Assert-GitSuccess "Failed to create tag '$TagName'."
 
-    if (-not $TagName) {
-        ErrorMsg "Tag name is required."
-        exit 1
+        Info "⬆️  Force pushing tag to origin..."
+        git push origin $TagName --force
+        Assert-GitSuccess "Failed to push tag '$TagName' to origin."
+
+        Success "✅ Tag '$TagName' created and pushed successfully!"
     }
 
-    if (-not $Commit) { $Commit = "HEAD" }
+    "r" {
+        $CurrentBranch = (git rev-parse --abbrev-ref HEAD).Trim()
+        Assert-GitSuccess "Failed to get current branch."
 
-    Info "💡 Force creating tag '$TagName' at commit '$Commit'..."
-    git tag -f $TagName $Commit
+        if ($CurrentBranch -notmatch "^(main|master)$") {
+            ErrorMsg "Can only restore 'main' or 'master' branch. Current branch is '$CurrentBranch'."
+            exit 1
+        }
 
-    Info "⬆️  Force pushing tag..."
-    git push origin $TagName --force
+        Info "🔄 Resetting branch '$CurrentBranch' to tag '$TagName'..."
+        git reset --hard $TagName
+        Assert-GitSuccess "Failed to reset branch '$CurrentBranch' to '$TagName'."
 
-    Success "✅ Tag '$TagName' created/updated!"
-    exit 0
+        Info "⬆️  Force pushing branch '$CurrentBranch'..."
+        git push origin $CurrentBranch --force
+        Assert-GitSuccess "Failed to force push branch '$CurrentBranch'."
+
+        Success "✅ Branch '$CurrentBranch' reset and pushed to '$TagName'!"
+    }
 }
 
-if ($Action -eq "r") {
-
-    if (-not $TagName) {
-        ErrorMsg "Tag name is required."
-        exit 1
-    }
-
-    $CurrentBranch = git rev-parse --abbrev-ref HEAD
-
-    if ($CurrentBranch -ne "main" -and $CurrentBranch -ne "master") {
-        ErrorMsg "Can only restore 'main' or 'master' branch, current branch is '$CurrentBranch'"
-        exit 1
-    }
-
-    Info "🔄 Resetting branch '$CurrentBranch' to tag '$TagName'..."
-    git reset --hard $TagName
-
-    Info "⬆️  Force pushing branch..."
-    git push origin $CurrentBranch --force
-
-    Success "✅ Branch '$CurrentBranch' reset to '$TagName'!"
-    exit 0
-}
-
-ErrorMsg "Unknown action '$Action'"
-Write-Host "  git-tag.ps1 <b|r> <tag> [commit]"
-Write-Host "Example: "
-Write-Host "  git-tag.ps1 b v0.1.5"
-Write-Host "  git-tag.ps1 r v0.1.5"
-exit 1
+exit 0

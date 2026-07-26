@@ -26,7 +26,7 @@ $COLOR_FRONTEND = 'DarkGreen'
 $COLOR_SUB      = 'DarkGray'
 $VERSION        = '0.1.5'
 
-Set-Location $PSScriptRoot/..
+Set-Location $TOP
 
 function Get-ConsoleWidth {
     return 160
@@ -67,15 +67,15 @@ function Show-Banner {
 try {
     if ($Frontend) {
         Show-Banner -Mode 'frontend'
-        Set-Location frontend
+        Set-Location $TOP/frontend
         npm run dev
     }
     elseif ($All) {
-        Set-Location frontend
+        Set-Location $TOP/frontend
         npm run build
-        Set-Location ..
+
         Show-Banner -Mode 'backend'
-        Set-Location backend
+        Set-Location $TOP/backend
         sqlc generate
         go mod tidy
         go build -o $RUN_BIN
@@ -87,7 +87,7 @@ try {
     }
     else {
         Show-Banner -Mode 'backend'
-        Set-Location backend
+        Set-Location $TOP/backend
         sqlc generate
         go mod tidy
         go build -o $RUN_BIN
@@ -95,9 +95,9 @@ try {
             Write-Host "Go build failed" -ForegroundColor Red
             exit 1
         }
-        & $RUN_BIN -p 5001 -d
+        & $RUN_BIN -d
     }
 }
 finally {
-    Set-Location $PSScriptRoot/..
+    Set-Location $TOP
 }

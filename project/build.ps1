@@ -19,12 +19,10 @@ param(
 )
 
 Write-Host "+++ 📚 Welcome to Project Builder +++" -ForegroundColor Cyan
-
-Set-Location $TOP
 Write-Host "### 🌿 Building project..." -ForegroundColor Blue
 
 if ($Frontend -or $All) {
-    Set-Location $PSScriptRoot/../frontend
+    Set-Location $TOP/frontend
     Write-Host "### 🌿 Building Frontend..." -ForegroundColor Yellow
     npm run build
     if ($LASTEXITCODE -ne 0) {
@@ -35,7 +33,7 @@ if ($Frontend -or $All) {
 }
 
 if ($Backend -or $All) {
-    Set-Location $PSScriptRoot/../backend
+    Set-Location $TOP/backend
     Write-Host "### 🌿 Building Backend..." -ForegroundColor Yellow
     go build -o ./data/authenticator
     if ($LASTEXITCODE -ne 0) {

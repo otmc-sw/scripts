@@ -106,5 +106,5 @@ try {
     }
 }
 finally {
-    Set-Location $PSScriptRoot/..
+    Set-Location $TOP
 }

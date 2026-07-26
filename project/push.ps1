@@ -8,8 +8,6 @@
 EnsureTopDirectory
 
 Write-Host "+++ 📚 Welcome to Source Pusher +++" -ForegroundColor Cyan
-
-Set-Location $PSScriptRoot/..
 Write-Host "### 🌿 Pushing changes to remote repository..." -ForegroundColor Blue
 git add .
 git commit -m "Init: Update files"
