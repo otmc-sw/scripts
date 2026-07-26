@@ -39,10 +39,16 @@ $LicenseHeaders = @{
 
 Write-Host "### 📜 Detected license: $DetectedLicense" -ForegroundColor Cyan
 
-# --- 2. Cấu hình Đường dẫn, Whitelist & Bỏ qua Thư mục ---
-$SrcDirs       = @("$TOP")
-$IgnoredNames  = @("sqlc", "node_modules", "test-results", "dist", "data", ".git")
-$Extensions    = @(".css", ".js", ".ts", ".tsx", ".go")
+# --- 2. Cấu hình Đường dẫn & Whitelist ---
+$SrcDirs        = @("$TOP")
+$IgnoredNames   = [System.Collections.Generic.HashSet[string]]::new(
+    [string[]]@("sqlc", "node_modules", "test-results", "dist", "data", ".git", "build", ".next", "out"), 
+    [System.StringComparer]::OrdinalIgnoreCase
+)
+$TargetExts     = [System.Collections.Generic.HashSet[string]]::new(
+    [string[]]@(".css", ".js", ".ts", ".tsx", ".jsx", ".go"), 
+    [System.StringComparer]::OrdinalIgnoreCase
+)
 
 $WhitelistTerms = @(
     "Apache License 2.0", "2026 OTMC Softwares", "OTMC License",
@@ -50,12 +56,10 @@ $WhitelistTerms = @(
     "TODO:", "go:embed", "eslint-disable", "@ts-ignore", "@jsxImportSource"
 )
 
-# Biên dịch Regex với tùy chọn Compiled để tối ưu performance
-$RegexOpts      = [System.Text.RegularExpressions.RegexOptions]::Compiled
+$RegexOpts        = [System.Text.RegularExpressions.RegexOptions]::Compiled
 $WhitelistPattern = ($WhitelistTerms | ForEach-Object { [regex]::Escape($_) }) -join '|'
-$WhitelistRegex = [regex]::new($WhitelistPattern, $RegexOpts)
-
-$Utf8Encoding   = New-Object System.Text.UTF8Encoding($false)
+$WhitelistRegex   = [regex]::new($WhitelistPattern, $RegexOpts)
+$Utf8Encoding     = New-Object System.Text.UTF8Encoding($false)
 
 # --- 3. Helper Functions ---
 function Test-ShouldKeepComment ([string]$CommentText) {
@@ -68,7 +72,9 @@ function Add-LicenseHeaderIfNeeded ([string]$Content, [string]$LicenseType) {
 }
 
 function Process-FileContent ([string]$Content, [string]$Extension) {
-    if ($Extension -in @("tsx", "jsx")) {
+    $ext = $Extension.ToLower()
+
+    if ($ext -in @("tsx", "jsx")) {
         $Content = [regex]::Replace($Content, '(?m)^[ \t]*\{\s*/\*[\s\S]*?\*/\s*\}[ \t]*(\r?\n)?', {
             param($m) if (Test-ShouldKeepComment $m.Value) { $m.Value } else { '' }
         })
@@ -84,7 +90,7 @@ function Process-FileContent ([string]$Content, [string]$Extension) {
         param($m) if (Test-ShouldKeepComment $m.Value) { $m.Value } else { '' }
     })
 
-    # Inline Comment: code; // comment (Tránh URL & Template literals)
+    # Inline Comment: code; // comment
     $Content = [regex]::Replace($Content, '(?m)(?<!:|\w)\s*//(?![/\w\d_]+\.\w+).*$', {
         param($m)
         $val = $m.Value
@@ -95,46 +101,45 @@ function Process-FileContent ([string]$Content, [string]$Extension) {
     return $Content
 }
 
-function Remove-FileComments ([string]$FilePath, [string]$Extension) {
+function Remove-FileComments ([string]$FilePath) {
+    $ext      = [System.IO.Path]::GetExtension($FilePath).TrimStart('.')
     $Original = [System.IO.File]::ReadAllText($FilePath)
     $Content  = Add-LicenseHeaderIfNeeded -Content $Original -LicenseType $DetectedLicense
-    $Content  = Process-FileContent -Content $Content -Extension $Extension
+    $Content  = Process-FileContent -Content $Content -Extension $ext
 
     if ($Content -ne $Original) {
         [System.IO.File]::WriteAllText($FilePath, $Content, $Utf8Encoding)
     }
 }
 
-# Hàm lấy danh sách file thông minh (Bỏ qua triệt để thư mục bị Ignore ngay khi duyệt)
-function Get-TargetFiles ([string]$RootPath) {
-    $ResultFiles = [System.Collections.Generic.List[System.IO.FileInfo]]::new()
-    
-    # Sử dụng Get-ChildItem kết hợp -Directory và -Exclude/Bỏ qua từ đầu
-    $DirectoryQueue = [System.Collections.Generic.Queue[string]]::new()
-    $DirectoryQueue.Enqueue($RootPath)
+# Hàm lấy file siêu tốc qua .NET Directory (Bỏ qua thư mục Ignored ngay từ khâu duyệt)
+function Fast-GetFiles ([string]$RootPath) {
+    $FileList = [System.Collections.Generic.List[string]]::new()
 
-    while ($DirectoryQueue.Count -gt 0) {
-        $CurrentDir = $DirectoryQueue.Dequeue()
-
+    function Traverse ([string]$CurrentPath) {
         try {
-            # 1. Lấy các file thỏa mãn đuôi mở rộng trong thư mục hiện tại
-            $Files = Get-ChildItem -Path $CurrentDir -File -ErrorAction SilentlyContinue | 
-                Where-Object { $_.Extension -in $Extensions }
-            if ($Files) { $ResultFiles.AddRange($Files) }
+            # 1. Thu thập các file thỏa mãn đuôi mở rộng
+            foreach ($file in [System.IO.Directory]::EnumerateFiles($CurrentPath)) {
+                $ext = [System.IO.Path]::GetExtension($file)
+                if ($TargetExts.Contains($ext)) {
+                    $FileList.Add($file)
+                }
+            }
 
-            # 2. Lấy các thư mục con và LỌC NGAY TỪ ĐẦU các thư mục trong $IgnoredNames
-            $SubDirs = Get-ChildItem -Path $CurrentDir -Directory -ErrorAction SilentlyContinue | 
-                Where-Object { $_.Name -notin $IgnoredNames }
-
-            foreach ($SubDir in $SubDirs) {
-                $DirectoryQueue.Enqueue($SubDir.FullName)
+            # 2. Thu thập thư mục con & Lọc ngay thư mục Ignored
+            foreach ($dir in [System.IO.Directory]::EnumerateDirectories($CurrentPath)) {
+                $dirName = [System.IO.Path]::GetFileName($dir)
+                if (-not $IgnoredNames.Contains($dirName)) {
+                    Traverse -CurrentPath $dir
+                }
             }
         } catch {
-            # Bỏ qua thư mục không có quyền truy cập
+            # Bỏ qua các thư mục không có quyền truy cập
         }
     }
 
-    return $ResultFiles
+    Traverse -CurrentPath $RootPath
+    return $FileList
 }
 
 # --- 4. Main Loop ---
@@ -148,18 +153,17 @@ foreach ($Dir in $SrcDirs) {
 
     Write-Host "`n### 📁 Scanning: $Dir" -ForegroundColor Blue
 
-    # Lấy danh sách file với thuật toán bỏ qua thư mục Ignored ngay từ đầu
-    $Files    = Get-TargetFiles -RootPath $Dir
+    $Files    = Fast-GetFiles -RootPath $Dir
     $dirTotal = $Files.Count
     $count    = 0
 
-    foreach ($File in $Files) {
+    foreach ($FilePath in $Files) {
         $count++
         $TotalProcessedFiles++
-        Write-Host ("    → [{0,3}/{1,3}] 🌿 Processing: {2}" -f $count, $dirTotal, $File.Name)
+        $fileName = [System.IO.Path]::GetFileName($FilePath)
         
-        $ext = $File.Extension.TrimStart('.')
-        Remove-FileComments -FilePath $File.FullName -Extension $ext
+        Write-Host ("    → [{0,3}/{1,3}] 🌿 Processing: {2}" -f $count, $dirTotal, $fileName)
+        Remove-FileComments -FilePath $FilePath
     }
 
     Write-Host "🚀 Completed processing $Dir with $dirTotal files" -ForegroundColor Green
