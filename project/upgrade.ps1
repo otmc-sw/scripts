@@ -1,7 +1,7 @@
 #
-# OTMC License.
-# Copyright (c) 2026 OTMC Softwares. All rights reserved.
-# Contributors: Trung Ng, OTMC Authors.
+# Apache License 2.0.
+# Copyright (c) 2026 OTMC Softwares.
+# Contributors: Nguyen Van Trung, OTMC Contributors.
 #
 
 param(
@@ -18,8 +18,9 @@ param(
 $COLOR_BACKEND  = 'DarkBlue'
 $COLOR_FRONTEND = 'DarkGreen'
 $COLOR_SUB      = 'DarkGray'
-$DO_FRONTEND = $Frontend -or $All
-$DO_BACKEND = $Backend -or $All
+$DO_FRONTEND    = $Frontend -or $All
+$DO_BACKEND     = $Backend -or $All
+
 if (-not $DO_FRONTEND -and -not $DO_BACKEND) {
     $DO_BACKEND = $true
 }

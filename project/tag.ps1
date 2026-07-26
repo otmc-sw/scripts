@@ -1,7 +1,7 @@
 #
-# OTMC License.
-# Copyright (c) 2026 OTMC Softwares. All rights reserved.
-# Contributors: Trung Ng, OTMC Authors.
+# Apache License 2.0.
+# Copyright (c) 2026 OTMC Softwares.
+# Contributors: Nguyen Van Trung, OTMC Contributors.
 #
 
 Param(
@@ -17,9 +17,7 @@ function Info($msg)     { Write-Host $msg -ForegroundColor Cyan }
 function Success($msg)  { Write-Host $msg -ForegroundColor Green }
 function ErrorMsg($msg) { Write-Host $msg -ForegroundColor Red }
 
-# ------------------------------
-# Action: backup
-# ------------------------------
+
 if ($Action -eq "b") {
 
     if (-not $TagName) {
@@ -39,9 +37,6 @@ if ($Action -eq "b") {
     exit 0
 }
 
-# ------------------------------
-# Action: restore
-# ------------------------------
 if ($Action -eq "r") {
 
     if (-not $TagName) {
@@ -66,9 +61,6 @@ if ($Action -eq "r") {
     exit 0
 }
 
-# ------------------------------
-# Unknown action
-# ------------------------------
 ErrorMsg "Unknown action '$Action'"
 Write-Host "  git-tag.ps1 <b|r> <tag> [commit]"
 Write-Host "Example: "

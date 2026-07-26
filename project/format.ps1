@@ -1,16 +1,16 @@
 #
-# OTMC License.
-# Copyright (c) 2026 OTMC Softwares. All rights reserved.
-# Contributors: Trung Ng, OTMC Authors.
+# Apache License 2.0.
+# Copyright (c) 2026 OTMC Softwares.
+# Contributors: Nguyen Van Trung, OTMC Contributors.
 #
 
 Set-Location -Path $PSScriptRoot/..
 
 $LicenseHeader = @'
 /**
- * @License OTMC License
- * @Copyright (c) 2026 OTMC Softwares. All rights reserved.
- * @Contributors Trung Ng, OTMC Authors.
+ * @License Apache License 2.0
+ * @Copyright (c) 2026 OTMC Softwares.
+ * @Contributors Nguyen Van Trung, OTMC Contributors.
 **/
 '@
 
@@ -29,9 +29,9 @@ $IgnoredDirs = @(
 )
 
 $Whitelist = @(
-    "OTMC License",
+    "Apache License 2.0",
     "Copyright",
-    "Trung Ng",
+    "Nguyen Van Trung",
     "TODO: ",
     "go:embed",
     "Contributors:",
@@ -129,7 +129,7 @@ function Strip-LineComments {
 function Has-LicenseHeader {
     param ([string]$Content)
 
-    return $Content -match '@License OTMC License'
+    return $Content -match '@License Apache License 2.0'
 }
 
 function Add-LicenseHeader {
