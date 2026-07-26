@@ -1,244 +1,146 @@
-#
-# Apache License 2.0.
+# ==============================================================================
+# Script Tối Ưu Hóa & Xóa Comment Tự Động
 # Copyright (c) 2026 OTMC Softwares.
-# Contributors: Nguyen Van Trung, OTMC Contributors.
-#
+# ==============================================================================
 
-. $PSScriptRoot/utils.ps1
+. "$PSScriptRoot/utils.ps1"
 EnsureTopDirectory
-
-Set-Location -Path $TOP
-
-$LicenseFile = $null
-if (Test-Path "$TOP/LICENSE") {
-    $LicenseFile = "$TOP/LICENSE"
-} elseif (Test-Path "$TOP/LICENCE") {
-    $LicenseFile = "$TOP/LICENCE"
-}
+if ($TOP) { Set-Location -Path $TOP }
 
 $DetectedLicense = "Apache License 2.0"
-if ($LicenseFile) {
-    $LicenseContent = Get-Content -Path $LicenseFile -Raw
-    if ($LicenseContent -match "Apache License" -or $LicenseContent -match "Apache-2.0") {
-        $DetectedLicense = "Apache License 2.0"
-    } elseif ($LicenseContent -match "OTMC License") {
-        $DetectedLicense = "OTMC License"
-    }
+$LicenseFile     = Get-ChildItem -Path $TOP -File -ErrorAction SilentlyContinue | 
+    Where-Object { $_.Name -match '^LICEN[CS]E(\.txt)?$' } | 
+    Select-Object -First 1
+
+if ($LicenseFile -and (Get-Content -Path $LicenseFile.FullName -Raw) -match "OTMC License") {
+    $DetectedLicense = "OTMC License"
 }
 
-$ApacheLicenseHeader = @'
+$LicenseHeaders = @{
+    "Apache License 2.0" = @"
 /**
  * @License Apache License 2.0
  * @Copyright (c) 2026 OTMC Softwares.
  * @Contributors Nguyen Van Trung, OTMC Contributors.
-**/
-'@
-
-$OTMCLicenseHeader = @'
+ **/
+"@
+    "OTMC License"       = @"
 /**
  * @License OTMC License
  * @Copyright (c) 2026 OTMC Softwares. All rights reserved.
  * @Contributors Nguyen Van Trung, OTMC Contributors.
-**/
-'@
+ **/
+"@
+}
 
 Write-Host "### 📜 Detected license: $DetectedLicense" -ForegroundColor Cyan
 
+
 $SrcDirs = @(
-    "frontend/src/",
-    "backend/",
+    "frontend/src/"
+    "backend/"
     "tests/"
 )
 
-$IgnoredDirs = @(
-    "\sqlc\",
-    "\node_modules\",
-    "\test-results\",
-    "\dist\",
-    "\data\"
+$IgnoredList = @(
+    "sqlc"
+    "node_modules"
+    "test-results"
+    "dist"
+    "data"
 )
 
-$Whitelist = @(
-    "Apache License 2.0",
-    "2026 OTMC Softwares",
-    "OTMC License",
-    "OTMC Contributors",
-    "Copyright",
-    "Nguyen Van Trung",
-    "TODO: ",
-    "go:embed",
-    "eslint-disable",
-    "@ts-ignore",
+$IgnoredRegex = [regex] [string]::Format('(?i)[\\/]({0})[\\/]', (($IgnoredList | ForEach-Object { [regex]::Escape($_) }) -join '|'))
+
+
+$WhitelistTerms = @(
+    "Apache License 2.0"
+    "2026 OTMC Softwares"
+    "OTMC License"
+    "OTMC Contributors"
+    "Copyright"
+    "Nguyen Van Trung"
+    "TODO:"
+    "go:embed"
+    "eslint-disable"
+    "@ts-ignore"
     "@jsxImportSource"
 )
+$WhitelistRegex = [regex] (($WhitelistTerms | ForEach-Object { [regex]::Escape($_) }) -join '|')
 
-function ShouldKeepComment {
-    param ([string]$Text)
 
-    foreach ($entry in $Whitelist) {
-        if ($Text -match [regex]::Escape($entry)) {
-            return $true
-        }
-    }
-    return $false
+$Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+
+function Test-ShouldKeepComment ([string]$CommentText) {
+    return $WhitelistRegex.IsMatch($CommentText)
 }
 
-function IsIgnoredPath {
-    param ([string]$FullPath)
-
-    foreach ($ignored in $IgnoredDirs) {
-        if ($FullPath -like "*$ignored*") {
-            return $true
-        }
-    }
-    return $false
-}
-
-function Strip-JSXComments {
-    param ([string]$Content)
-
-    return [regex]::Replace(
-        $Content,
-        '^[ \t]*\{\s*/\*.*?\*/\s*\}[ \t]*(\r?\n|$)',
-        '',
-        'Singleline, Multiline'
-    )
-}
-
-function Strip-BlockComments {
-    param ([string]$Content)
-
-    return [regex]::Replace(
-        $Content,
-        '^[ \t]*/\*.*?\*/[ \t]*(\r?\n|$)',
-        {
-            param($m)
-            if (ShouldKeepComment $m.Value) { $m.Value } else { "" }
-        },
-        'Singleline, Multiline'
-    )
-}
-
-function Strip-LineComments {
-    param ([string]$Content)
-
-    $lines = $Content -split "`n"
-    $result = @()
-
-    foreach ($line in $lines) {
-        if ($line -match '^[ \t]*//') {
-            if (ShouldKeepComment $line) {
-                $result += $line
-            }
-            continue
-        }
-        if ($line -match '["'']') {
-            $result += $line
-            continue
-        }
-
-        if ($line -match '([,)}][^/]*?)\s*//') {
-            $clean = ($line -replace '\s*//.*$', '').TrimEnd()
-            $result += $clean
-            continue
-        }
-
-        $result += $line
-    }
-
-    return ($result -join "`n")
-}
-
-function Has-LicenseHeader {
-    param (
-        [string]$Content,
-        [string]$LicenseType
-    )
-
-    if ($LicenseType -eq "OTMC License") {
-        return $Content -match '@License OTMC License'
-    }
-    return $Content -match '@License Apache License 2.0'
-}
-
-function Add-LicenseHeader {
-    param (
-        [string]$Content,
-        [string]$LicenseType
-    )
-
-    if (Has-LicenseHeader $Content $LicenseType) {
+function Add-LicenseHeaderIfNeeded ([string]$Content, [string]$LicenseType) {
+    if ($Content -match '^\s*(//|/\*)') {
         return $Content
     }
-
-    if ($LicenseType -eq "OTMC License") {
-        return "$OTMCLicenseHeader`n$Content"
-    }
-
-    return "$ApacheLicenseHeader`n$Content"
+    return "$($LicenseHeaders[$LicenseType])`n$Content"
 }
 
-function Remove-FileComments {
-    param (
-        [string]$FilePath,
-        [string]$FileType
-    )
-
-    if (IsIgnoredPath $FilePath) {
-        Write-Host " ⏭ Skipped (ignored dir): $FilePath"
-        return
+function Process-FileContent ([string]$Content, [string]$Extension) {
+    if ($Extension -eq "tsx") {
+        $Content = [regex]::Replace($Content, '(?m)^[ \t]*\{\s*/\*[\s\S]*?\*/\s*\}[ \t]*(\r?\n)?', {
+            param($m) if (Test-ShouldKeepComment $m.Value) { $m.Value } else { '' }
+        })
     }
 
-    $Original = Get-Content -Path $FilePath -Raw
-    $Content = $Original
-    $Content = Add-LicenseHeader $Content $Using:DetectedLicense
+    $Content = [regex]::Replace($Content, '(?m)^[ \t]*/\*[\s\S]*?\*/[ \t]*(\r?\n)?|/\*[\s\S]*?\*/', {
+        param($m) if (Test-ShouldKeepComment $m.Value) { $m.Value } else { '' }
+    })
 
-    switch ($FileType) {
-        "ts" {
-            $Content = Strip-BlockComments $Content
-            $Content = Strip-LineComments  $Content
-        }
-        "tsx" {
-            $Content = Strip-JSXComments   $Content
-            $Content = Strip-BlockComments $Content
-            $Content = Strip-LineComments  $Content
-        }
-        "go" {
-            $Content = Strip-BlockComments $Content
-            $Content = Strip-LineComments  $Content
-        }
-    }
+    $Content = [regex]::Replace($Content, '(?m)^[ \t]*//.*(?:\r?\n|$)', {
+        param($m) if (Test-ShouldKeepComment $m.Value) { $m.Value } else { '' }
+    })
+
+    $Content = [regex]::Replace($Content, '(?m)(?<!:)\s*//(?!/).*$', {
+        param($m) if (Test-ShouldKeepComment $m.Value) { $m.Value } else { '' }
+    })
+
+    return $Content
+}
+
+function Remove-FileComments ([string]$FilePath, [string]$Extension) {
+    if ($IgnoredRegex.IsMatch($FilePath)) { return }
+
+    $Original = [System.IO.File]::ReadAllText($FilePath)
+    
+    $Content = Add-LicenseHeaderIfNeeded -Content $Original -LicenseType $DetectedLicense
+    
+    $Content = Process-FileContent -Content $Content -Extension $Extension
 
     if ($Content -ne $Original) {
-        [System.IO.File]::WriteAllText(
-            $FilePath,
-            $Content,
-            [System.Text.Encoding]::UTF8
-        )
+        [System.IO.File]::WriteAllText($FilePath, $Content, $Utf8NoBom)
     }
 }
 
 foreach ($Dir in $SrcDirs) {
-
     if (-not (Test-Path $Dir)) {
-        Write-Host "⚠️  Skipping missing directory: $Dir"
+        Write-Host "⚠️ Skipping missing directory: $Dir" -ForegroundColor Yellow
         continue
     }
 
     Write-Host "`n### 📁 Scanning: $Dir" -ForegroundColor Blue
 
-    $Files = Get-ChildItem -Path $Dir -Recurse -Include *.css, *.ts, *.tsx, *.go |
-        Where-Object { -not (IsIgnoredPath $_.FullName) }
+    $Files = Get-ChildItem -Path $Dir -Recurse -File -Include *.css, *.ts, *.tsx, *.go |
+        Where-Object { -not $IgnoredRegex.IsMatch($_.FullName) }
+
+    $total = $Files.Count
+    $count = 0
 
     foreach ($File in $Files) {
-        $index = $Files.IndexOf($File) + 1
-        Write-Host ("     → {0,3}/{1,3} 🌿 Processing: {2}" -f $index, $Files.Count, $File.FullName)
-        Remove-FileComments `
-            -FilePath $File.FullName `
-            -FileType $File.Extension.TrimStart('.')
+        $count++
+        Write-Host ("     → [{0,3}/{1,3}] 🌿 Processing: {2}" -f $count, $total, $File.Name)
+        Remove-FileComments -FilePath $File.FullName -Extension $File.Extension.TrimStart('.')
     }
-    Write-Host ("🚀 Completed processing {0} with {1} files" -f $Dir, $Files.Count) -ForegroundColor Green
-    
+
+    Write-Host "🚀 Completed processing $Dir with $total files" -ForegroundColor Green
 }
 
 Write-Host "`n>>> ✨ Comment removal complete." -ForegroundColor Green
+
+
