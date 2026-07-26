@@ -1,12 +1,10 @@
 
-$STEP_COUNTER = 1
 
 function Log-Step {
     param (
         [string]$Message
     )
-    Write-Host "`n### $STEP_COUNTER. $Message" -ForegroundColor Blue
-    $STEP_COUNTER++
+    Write-Host "`n### $Message" -ForegroundColor Blue
 }
 
 function Log-Success {
