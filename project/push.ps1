@@ -4,6 +4,9 @@
 # Contributors: Nguyen Van Trung, OTMC Contributors.
 #
 
+. $PSScriptRoot/utils.ps1
+EnsureTopDirectory
+
 Write-Host "+++ 📚 Welcome to Source Pusher +++" -ForegroundColor Cyan
 
 Set-Location $PSScriptRoot/..

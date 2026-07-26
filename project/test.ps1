@@ -4,6 +4,9 @@
 # Contributors: Nguyen Van Trung, Nguyen Thi Hoai, OTMC Contributors.
 #
 
+. $PSScriptRoot/utils.ps1
+EnsureTopDirectory
+
 $TOP = $PSScriptRoot + "/.."
 $PLAYWRIGHT_DIR = "$TOP/tests/playwright"
 

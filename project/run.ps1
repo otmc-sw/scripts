@@ -4,6 +4,9 @@
 # Contributors: Nguyen Van Trung, OTMC Contributors.
 #
 
+. $PSScriptRoot/utils.ps1
+EnsureTopDirectory
+
 param(
     [Alias('f')]
     [switch]$Frontend,

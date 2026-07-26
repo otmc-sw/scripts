@@ -4,6 +4,9 @@
 # Contributors: Nguyen Van Trung, OTMC Contributors.
 #
 
+. $PSScriptRoot/utils.ps1
+EnsureTopDirectory
+
 Param(
     [Parameter(Mandatory=$true)]
     [string]$Action,

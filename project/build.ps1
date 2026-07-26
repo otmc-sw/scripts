@@ -3,6 +3,10 @@
 # Copyright (c) 2026 OTMC Softwares.
 # Contributors: Nguyen Van Trung, OTMC Contributors.
 #
+
+. $PSScriptRoot/utils.ps1
+EnsureTopDirectory
+
 param(
     [Alias('f')]
     [switch]$Frontend,
@@ -16,7 +20,7 @@ param(
 
 Write-Host "+++ 📚 Welcome to Project Builder +++" -ForegroundColor Cyan
 
-Set-Location $PSScriptRoot/..
+Set-Location $TOP
 Write-Host "### 🌿 Building project..." -ForegroundColor Blue
 
 if ($Frontend -or $All) {
