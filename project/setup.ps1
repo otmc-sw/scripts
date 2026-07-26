@@ -1,0 +1,21 @@
+#
+# OTMC License.
+# Copyright (c) 2026 OTMC Softwares. All rights reserved.
+# Contributors: Nguyen Van Trung, OTMC Authors.
+#
+
+Set-Location $PSScriptRoot/..
+
+try {
+    Write-Host ">>> 💻 Setting up Frontend ..." -ForegroundColor Green
+    Set-Location frontend
+    npm install
+    npm audit fix
+
+    Write-Host ">>> 🧪 Setting up Playwright ..." -ForegroundColor Green
+    Set-Location $PSScriptRoot/../tests/playwright
+    npm install
+    npm audit fix
+} finally {
+    Set-Location $PSScriptRoot/..
+}
