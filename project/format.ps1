@@ -134,4 +134,7 @@ foreach ($Dir in $SrcDirs) {
     Write-Host "🚀 Completed processing $Dir with $total files" -ForegroundColor Green
 }
 
+
 Write-Host "`n>>> ✨ Comment removal complete." -ForegroundColor Green
+Write-Host "    - Elapsed:   $([math]::Round($stopwatch.Elapsed.TotalSeconds, 2))s" -ForegroundColor Cyan
+Write-Host "    - Processed: $total files" -ForegroundColor Cyan
