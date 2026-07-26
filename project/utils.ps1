@@ -1,12 +1,12 @@
 
 
 function EnsureTopDirectory() {
-    if (-not $env:TOP) {
-        Write-Error "ERROR: Environment variable TOP is not defined."
+    if (-not $TOP) {
+        Write-Error "ERROR: Variable TOP is not defined."
         exit 1
     }
 
-    Write-Host "🌿 Working directory: $env:TOP
-    Set-Location $env:TOP
+    Write-Host "🌿 Working directory: $TOP"
+    Set-Location $TOP
 }
 
