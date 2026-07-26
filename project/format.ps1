@@ -9,6 +9,23 @@ EnsureTopDirectory
 
 Set-Location -Path $TOP
 
+$LicenseFile = $null
+if (Test-Path "$TOP/LICENSE") {
+    $LicenseFile = "$TOP/LICENSE"
+} elseif (Test-Path "$TOP/LICENCE") {
+    $LicenseFile = "$TOP/LICENCE"
+}
+
+$DetectedLicense = "Apache License 2.0"
+if ($LicenseFile) {
+    $LicenseContent = Get-Content -Path $LicenseFile -Raw
+    if ($LicenseContent -match "Apache License" -or $LicenseContent -match "Apache-2.0") {
+        $DetectedLicense = "Apache License 2.0"
+    } elseif ($LicenseContent -match "OTMC License") {
+        $DetectedLicense = "OTMC License"
+    }
+}
+
 $ApacheLicenseHeader = @'
 /**
  * @License Apache License 2.0
@@ -24,6 +41,8 @@ $OTMCLicenseHeader = @'
  * @Contributors Nguyen Van Trung, OTMC Contributors.
 **/
 '@
+
+Write-Host "### 📜 Detected license: $DetectedLicense" -ForegroundColor Cyan
 
 $SrcDirs = @(
     "frontend/src/",
@@ -130,17 +149,30 @@ function Strip-LineComments {
     return ($result -join "`n")
 }
 
-function Has-ApacheLicenseHeader {
-    param ([string]$Content)
+function Has-LicenseHeader {
+    param (
+        [string]$Content,
+        [string]$LicenseType
+    )
 
+    if ($LicenseType -eq "OTMC License") {
+        return $Content -match '@License OTMC License'
+    }
     return $Content -match '@License Apache License 2.0'
 }
 
-function Add-ApacheLicenseHeader {
-    param ([string]$Content)
+function Add-LicenseHeader {
+    param (
+        [string]$Content,
+        [string]$LicenseType
+    )
 
-    if (Has-ApacheLicenseHeader $Content) {
+    if (Has-LicenseHeader $Content $LicenseType) {
         return $Content
+    }
+
+    if ($LicenseType -eq "OTMC License") {
+        return "$OTMCLicenseHeader`n$Content"
     }
 
     return "$ApacheLicenseHeader`n$Content"
@@ -159,7 +191,7 @@ function Remove-FileComments {
 
     $Original = Get-Content -Path $FilePath -Raw
     $Content = $Original
-    $Content = Add-ApacheLicenseHeader $Content
+    $Content = Add-LicenseHeader $Content $Using:DetectedLicense
 
     switch ($FileType) {
         "ts" {

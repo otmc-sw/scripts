@@ -35,7 +35,7 @@ if ($Frontend -or $All) {
 if ($Backend -or $All) {
     Set-Location $TOP/backend
     Write-Host "### 🌿 Building Backend..." -ForegroundColor Yellow
-    go build -o ./data/authenticator
+    go build -o ./data/main.exe
     if ($LASTEXITCODE -ne 0) {
         Write-Host ">>> ❌ Backend build failed." -ForegroundColor Red
     } else {
