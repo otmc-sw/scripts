@@ -1,13 +1,13 @@
-# ==============================================================================
-# Script Tối Ưu Hóa & Xóa Comment Tự Động (Fix False Positives)
+#
+# Apache License 2.0.
 # Copyright (c) 2026 OTMC Softwares.
-# ==============================================================================
+# Contributors: Nguyen Van Trung, OTMC Contributors.
+#
 
 . "$PSScriptRoot/utils.ps1"
 EnsureTopDirectory
 if ($TOP) { Set-Location -Path $TOP }
 
-# --- 1. Nhận diện License ---
 $DetectedLicense = "Apache License 2.0"
 $LicenseFile     = Get-ChildItem -Path $TOP -File -ErrorAction SilentlyContinue | 
     Where-Object { $_.Name -match '^LICEN[CS]E(\.txt)?$' } | 
@@ -36,11 +36,8 @@ $LicenseHeaders = @{
 
 Write-Host "### 📜 Detected license: $DetectedLicense" -ForegroundColor Cyan
 
-# --- 2. Cấu hình Đường dẫn & Whitelist ---
 $SrcDirs = @(
-    "frontend/src/"
-    "backend/"
-    "tests/"
+    "$TOP"
 )
 
 $IgnoredList = @("sqlc", "node_modules", "test-results", "dist", "data")
@@ -55,13 +52,11 @@ $WhitelistRegex = [regex] (($WhitelistTerms | ForEach-Object { [regex]::Escape($
 
 $Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 
-# --- 3. Helper Functions ---
 function Test-ShouldKeepComment ([string]$CommentText) {
     return $WhitelistRegex.IsMatch($CommentText)
 }
 
 function Add-LicenseHeaderIfNeeded ([string]$Content, [string]$LicenseType) {
-    # Nếu file đã chứa comment ngay dòng đầu tiên (kể cả whitespace), bỏ qua việc chèn License
     if ($Content -match '^\s*(//|/\*)') {
         return $Content
     }
@@ -116,7 +111,6 @@ function Remove-FileComments ([string]$FilePath, [string]$Extension) {
     }
 }
 
-# --- 4. Main Processing Loop ---
 foreach ($Dir in $SrcDirs) {
     if (-not (Test-Path $Dir)) {
         Write-Host "⚠️ Skipping missing directory: $Dir" -ForegroundColor Yellow

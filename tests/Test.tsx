@@ -5,8 +5,7 @@
  **/
 const targetUrl = new URL(path.startsWith("http") ? path : `${base.replace(/\/$/, "")}/${path.replace(/^\//, "")}`);
 
-// test 123
 const jsonData = useMemo(
-  () => (data ? JSON.stringify(data, null, 2) : "No data"),  //test 324
+  () => (data ? JSON.stringify(data, null, 2) : "No data"),
   [data]
 );
