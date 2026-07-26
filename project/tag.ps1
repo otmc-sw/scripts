@@ -13,7 +13,7 @@ Param(
     [string]$Commit
 )
 
-function Info($msg)     { Write-Host $msg -ForegroundColor Cyan }
+function Info($msg)     { Write-Host $msg -ForegroundColor Blue }
 function Success($msg)  { Write-Host $msg -ForegroundColor Green }
 function ErrorMsg($msg) { Write-Host $msg -ForegroundColor Red }
 

@@ -6,10 +6,18 @@
 
 Set-Location -Path $PSScriptRoot/..
 
-$LicenseHeader = @'
+$ApacheLicenseHeader = @'
 /**
  * @License Apache License 2.0
  * @Copyright (c) 2026 OTMC Softwares.
+ * @Contributors Nguyen Van Trung, OTMC Contributors.
+**/
+'@
+
+$OTMCLicenseHeader = @'
+/**
+ * @License OTMC License
+ * @Copyright (c) 2026 OTMC Softwares. All rights reserved.
  * @Contributors Nguyen Van Trung, OTMC Contributors.
 **/
 '@
@@ -119,20 +127,20 @@ function Strip-LineComments {
     return ($result -join "`n")
 }
 
-function Has-LicenseHeader {
+function Has-ApacheLicenseHeader {
     param ([string]$Content)
 
     return $Content -match '@License Apache License 2.0'
 }
 
-function Add-LicenseHeader {
+function Add-ApacheLicenseHeader {
     param ([string]$Content)
 
-    if (Has-LicenseHeader $Content) {
+    if (Has-ApacheLicenseHeader $Content) {
         return $Content
     }
 
-    return "$LicenseHeader`n$Content"
+    return "$ApacheLicenseHeader`n$Content"
 }
 
 function Remove-FileComments {
@@ -148,25 +156,18 @@ function Remove-FileComments {
 
     $Original = Get-Content -Path $FilePath -Raw
     $Content = $Original
-    $Content = Add-LicenseHeader $Content
+    $Content = Add-ApacheLicenseHeader $Content
 
     switch ($FileType) {
-
         "ts" {
             $Content = Strip-BlockComments $Content
             $Content = Strip-LineComments  $Content
         }
-
         "tsx" {
             $Content = Strip-JSXComments   $Content
             $Content = Strip-BlockComments $Content
             $Content = Strip-LineComments  $Content
         }
-
-        "css" {
-            $Content = Strip-BlockComments $Content
-        }
-
         "go" {
             $Content = Strip-BlockComments $Content
             $Content = Strip-LineComments  $Content
@@ -189,14 +190,14 @@ foreach ($Dir in $SrcDirs) {
         continue
     }
 
-    Write-Host "`n📁 Scanning: $Dir" -ForegroundColor Blue
+    Write-Host "`n### 📁 Scanning: $Dir" -ForegroundColor Blue
 
     $Files = Get-ChildItem -Path $Dir -Recurse -Include *.css, *.ts, *.tsx, *.go |
         Where-Object { -not (IsIgnoredPath $_.FullName) }
 
     foreach ($File in $Files) {
         $index = $Files.IndexOf($File) + 1
-        Write-Host ("    → {0,3}/{1,3} 🌿 Processing: {2}" -f $index, $Files.Count, $File.FullName)
+        Write-Host ("     → {0,3}/{1,3} 🌿 Processing: {2}" -f $index, $Files.Count, $File.FullName)
         Remove-FileComments `
             -FilePath $File.FullName `
             -FileType $File.Extension.TrimStart('.')
@@ -205,4 +206,4 @@ foreach ($Dir in $SrcDirs) {
     
 }
 
-Write-Host "`n✨ Comment removal complete." -ForegroundColor Green
+Write-Host "`n>>> ✨ Comment removal complete." -ForegroundColor Green
