@@ -8,8 +8,11 @@
 EnsureTopDirectory
 
 Write-Host "+++ 📚 Welcome to Source Pusher +++" -ForegroundColor Cyan
-Write-Host "### 🌿 Pushing changes to remote repository..." -ForegroundColor Blue
+Log-Step "🌿 Pushing changes to remote repository..."
 git add .
+Error-Handler $LASTEXITCODE
 git commit -m "Init: Update files"
+Error-Handler $LASTEXITCODE
 git push
-Write-Host ">>> 🚀 Changes pushed successfully." -ForegroundColor Green
+Error-Handler $LASTEXITCODE
+Log-Success "Changes pushed successfully."

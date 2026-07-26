@@ -19,26 +19,19 @@ param(
 )
 
 Write-Host "+++ 📚 Welcome to Project Builder +++" -ForegroundColor Cyan
-Write-Host "### 🌿 Building project..." -ForegroundColor Blue
-
 if ($Frontend -or $All) {
     Set-Location $TOP/frontend
-    Write-Host "### 🌿 Building Frontend..." -ForegroundColor Yellow
+    Log-Step "🌿 Building Frontend..."
     npm run build
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host ">>> ❌ Frontend build failed." -ForegroundColor Red
-    } else {
-        Write-Host ">>> ✅ Frontend built successfully." -ForegroundColor Green
-    }
+    Error-Handler $LASTEXITCODE
+    Log-Success "Frontend built successfully."
 }
 
 if ($Backend -or $All) {
     Set-Location $TOP/backend
-    Write-Host "### 🌿 Building Backend..." -ForegroundColor Yellow
+    Log-Step "🌿 Building Backend..."
     go build -o ./data/main.exe
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host ">>> ❌ Backend build failed." -ForegroundColor Red
-    } else {
-        Write-Host ">>> ✅ Backend built successfully." -ForegroundColor Green
-    }
+    Error-Handler $LASTEXITCODE
+    Log-Success "Backend built successfully."
 }
+

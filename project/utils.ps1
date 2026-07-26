@@ -4,14 +4,14 @@ function Log-Step {
     param (
         [string]$Message
     )
-    Write-Host "`n### $Message" -ForegroundColor Blue
+    Write-Host "`n### $Message" -ForegroundColor DarkBlue
 }
 
 function Log-Success {
     param (
         [string]$Message
     )
-    Write-Host ">>> $Message." -ForegroundColor Green
+    Write-Host ">>> $Message." -ForegroundColor DarkGreen
 }
 
 function Log-Error {
@@ -37,6 +37,12 @@ function Warning-Handler {
         [string]$Message
     )
     Write-Host "⚠️ $Message" -ForegroundColor Yellow
+}
+
+function Run($command) {
+    Write-Host "`n>> Run Command: $command" -ForegroundColor Blue
+    Invoke-Expression $command
+    Error-Handler $LASTEXITCODE
 }
 
 function EnsureTopDirectory() {

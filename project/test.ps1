@@ -7,12 +7,8 @@
 . $PSScriptRoot/utils.ps1
 EnsureTopDirectory
 
-$TOP = $PSScriptRoot + "/.."
 $PLAYWRIGHT_DIR = "$TOP/tests/playwright"
 
-Write-Host '╔══════════════════════════════════════════════════╗' -ForegroundColor Cyan
-Write-Host '║              Test Manager v1.0                   ║' -ForegroundColor Cyan
-Write-Host '╚══════════════════════════════════════════════════╝' -ForegroundColor Cyan
 
 if ($args.Count -gt 0) {
     $option = $args[0]
