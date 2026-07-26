@@ -98,7 +98,7 @@ function Process-FileContent ([string]$Content, [string]$Extension) {
     })
 
     $Content = [regex]::Replace($Content, '(?m)(?<!:)\s*//(?!/).*$', {
-        param($m) if (Test-ShouldKeepComment $m.Value) { $m.Value } else { '' }
+        param($m) if ($m.Value -match '`' -or (Test-ShouldKeepComment $m.Value)) { $m.Value } else { '' }
     })
 
     return $Content
@@ -142,5 +142,3 @@ foreach ($Dir in $SrcDirs) {
 }
 
 Write-Host "`n>>> ✨ Comment removal complete." -ForegroundColor Green
-
-
