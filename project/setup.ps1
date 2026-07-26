@@ -8,12 +8,12 @@
 EnsureTopDirectory
 
 try {
-    Write-Host "### 💻 Setting up Frontend ..." -ForegroundColor Green
+    Log-Step "### 💻 Setting up Frontend ..."
     Set-Location $TOP/frontend
     npm install
     npm audit fix
 
-    Write-Host "### 🧪 Setting up Playwright ..." -ForegroundColor Green
+    Log-Step "### 🧪 Setting up Playwright ..."
     Set-Location $TOP/tests/playwright
     npm install
     npm audit fix

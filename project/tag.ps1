@@ -20,50 +20,40 @@ Param(
 . $PSScriptRoot/utils.ps1
 EnsureTopDirectory
 
-function Info([string]$msg)    { Write-Host $msg -ForegroundColor Blue }
-function Success([string]$msg) { Write-Host $msg -ForegroundColor Green }
-function ErrorMsg([string]$msg) { Write-Host $msg -ForegroundColor Red }
-
-function Assert-GitSuccess([string]$errorMessage) {
-    if ($LASTEXITCODE -ne 0) {
-        ErrorMsg "❌ $errorMessage"
-        exit $LASTEXITCODE
-    }
-}
 
 Write-Host "+++ 📚 Welcome to Source Tagger +++" -ForegroundColor Cyan
 
 switch ($Action) {
     "b" {
-        Info "💡 Force creating tag '$TagName' at commit '$Commit'..."
+        Log-Step "🧩 Creating tag '$TagName' at commit '$Commit'..."
         git tag -f $TagName $Commit
-        Assert-GitSuccess "Failed to create tag '$TagName'."
+        Error-Handler $LASTEXITCODE
 
-        Info "⬆️  Force pushing tag to origin..."
+        Log-Step "⬆️  Force pushing tag to origin..."
         git push origin $TagName --force
-        Assert-GitSuccess "Failed to push tag '$TagName' to origin."
+        Error-Handler $LASTEXITCODE
 
-        Success "✅ Tag '$TagName' created and pushed successfully!"
+        Log-Success "Tag '$TagName' created and pushed successfully!"
     }
 
     "r" {
         $CurrentBranch = (git rev-parse --abbrev-ref HEAD).Trim()
-        Assert-GitSuccess "Failed to get current branch."
+        Error-Handler $LASTEXITCODE
 
         if ($CurrentBranch -notmatch "^(main|master)$") {
-            ErrorMsg "Can only restore 'main' or 'master' branch. Current branch is '$CurrentBranch'."
+            Log-Error "Can only restore 'main' or 'master' branch. Current branch is '$CurrentBranch'."
             exit 1
         }
 
-        Info "🔄 Resetting branch '$CurrentBranch' to tag '$TagName'..."
+        Log-Step "🔄 Resetting branch '$CurrentBranch' to tag '$TagName'..."
         git reset --hard $TagName
-        Assert-GitSuccess "Failed to reset branch '$CurrentBranch' to '$TagName'."
+        Error-Handler $LASTEXITCODE
 
-        Info "⬆️  Force pushing branch '$CurrentBranch'..."
+        Log-Step "⬆️  Force pushing branch '$CurrentBranch'..."
         git push origin $CurrentBranch --force
-        Assert-GitSuccess "Failed to force push branch '$CurrentBranch'."
+        Error-Handler $LASTEXITCODE
 
-        Success "✅ Branch '$CurrentBranch' reset and pushed to '$TagName'!"
+        Log-Success "Branch '$CurrentBranch' reset and pushed to '$TagName'."
     }
 }
 
