@@ -30,11 +30,13 @@ $IgnoredDirs = @(
 
 $Whitelist = @(
     "Apache License 2.0",
+    "2026 OTMC Softwares",
+    "OTMC License",
+    "OTMC Contributors",
     "Copyright",
     "Nguyen Van Trung",
     "TODO: ",
     "go:embed",
-    "Contributors:",
     "eslint-disable",
     "@ts-ignore",
     "@jsxImportSource"
@@ -62,7 +64,6 @@ function IsIgnoredPath {
     return $false
 }
 
-# Remove full-line JSX comments: { /* ... */ }
 function Strip-JSXComments {
     param ([string]$Content)
 
@@ -74,7 +75,6 @@ function Strip-JSXComments {
     )
 }
 
-# Remove block comments (/* ... */) when standalone lines
 function Strip-BlockComments {
     param ([string]$Content)
 
@@ -89,7 +89,6 @@ function Strip-BlockComments {
     )
 }
 
-# Remove // comments (SAFE include-based)
 function Strip-LineComments {
     param ([string]$Content)
 
@@ -97,29 +96,23 @@ function Strip-LineComments {
     $result = @()
 
     foreach ($line in $lines) {
-
-        # 1. Full-line //
         if ($line -match '^[ \t]*//') {
             if (ShouldKeepComment $line) {
                 $result += $line
             }
             continue
         }
-
-        # 2. Skip lines containing quotes (string safety)
         if ($line -match '["'']') {
             $result += $line
             continue
         }
 
-        # 3. Inline // ONLY after , ) }
         if ($line -match '([,)}][^/]*?)\s*//') {
             $clean = ($line -replace '\s*//.*$', '').TrimEnd()
             $result += $clean
             continue
         }
 
-        # 4. Default
         $result += $line
     }
 
