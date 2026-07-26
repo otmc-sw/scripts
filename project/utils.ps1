@@ -40,7 +40,7 @@ function Warning-Handler {
 }
 
 function Run($command) {
-    Write-Host "`n>> Run Command: $command" -ForegroundColor Blue
+    Write-Host "`n>> $command" -ForegroundColor Blue
     Invoke-Expression $command
     Error-Handler $LASTEXITCODE
 }

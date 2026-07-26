@@ -18,9 +18,6 @@ param(
     [switch]$All
 )
 
-$COLOR_BACKEND  = 'DarkBlue'
-$COLOR_FRONTEND = 'DarkGreen'
-$COLOR_SUB      = 'DarkGray'
 $DO_FRONTEND    = $Frontend -or $All
 $DO_BACKEND     = $Backend -or $All
 
@@ -82,7 +79,6 @@ try {
 
         Log-Step "Step 3/4 : Tidy Modules"
         Run "go mod tidy"
-
 
         Log-Step "Step 4/4 : Build"
         Run "go build -o bin/server.exe ."

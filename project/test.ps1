@@ -9,18 +9,17 @@ EnsureTopDirectory
 
 $PLAYWRIGHT_DIR = "$TOP/tests/playwright"
 
-
 if ($args.Count -gt 0) {
     $option = $args[0]
 } else {
     Write-Host ""
-    Write-Host "  Select Playwright test type:" -ForegroundColor Yellow
-    Write-Host "  1. Run API tests" -ForegroundColor Green
-    Write-Host "  2. Run UI tests" -ForegroundColor Green
-    Write-Host "  3. Run all tests" -ForegroundColor Green
-    Write-Host "  4. Run UI tests in headed mode" -ForegroundColor Green
-    Write-Host "  5. Run in debug mode" -ForegroundColor Green
-    Write-Host "  6. View test report" -ForegroundColor Green
+    Write-Host "Select Playwright test type:" -ForegroundColor Yellow
+    Write-Host "    1. Run API tests" -ForegroundColor Green
+    Write-Host "    2. Run UI tests" -ForegroundColor Green
+    Write-Host "    3. Run all tests" -ForegroundColor Green
+    Write-Host "    4. Run UI tests in headed mode" -ForegroundColor Green
+    Write-Host "    5. Run in debug mode" -ForegroundColor Green
+    Write-Host "    6. View test report" -ForegroundColor Green
     $option = Read-Host ">> Select option (1-6)"
 }
 
