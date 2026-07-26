@@ -17,6 +17,7 @@ function Info($msg)     { Write-Host $msg -ForegroundColor Blue }
 function Success($msg)  { Write-Host $msg -ForegroundColor Green }
 function ErrorMsg($msg) { Write-Host $msg -ForegroundColor Red }
 
+Write-Host "+++ 📚 Welcome to Source Tagger +++" -ForegroundColor Cyan
 
 if ($Action -eq "b") {
 
