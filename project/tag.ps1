@@ -4,9 +4,6 @@
 # Contributors: Nguyen Van Trung, OTMC Contributors.
 #
 
-. $PSScriptRoot/utils.ps1
-EnsureTopDirectory
-
 Param(
     [Parameter(Mandatory = $true, Position = 0, HelpMessage = "Action: 'b' (build tag) or 'r' (reset branch to tag)")]
     [ValidateSet("b", "r")]
@@ -19,6 +16,9 @@ Param(
     [Parameter(Position = 2)]
     [string]$Commit = "HEAD"
 )
+
+. $PSScriptRoot/utils.ps1
+EnsureTopDirectory
 
 function Info([string]$msg)    { Write-Host $msg -ForegroundColor Blue }
 function Success([string]$msg) { Write-Host $msg -ForegroundColor Green }

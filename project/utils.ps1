@@ -6,7 +6,7 @@ function EnsureTopDirectory() {
         exit 1
     }
 
-    Write-Host "🌿 Working directory: $TOP"
+    Write-Host "### 🌿 Working directory: $TOP" -ForegroundColor Blue
     Set-Location $TOP
 }
 
