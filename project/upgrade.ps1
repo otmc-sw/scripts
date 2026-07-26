@@ -4,9 +4,6 @@
 # Contributors: Nguyen Van Trung, OTMC Contributors.
 #
 
-. $PSScriptRoot/utils.ps1
-EnsureTopDirectory
-
 param(
     [Alias('f')]
     [switch]$Frontend,
@@ -17,6 +14,9 @@ param(
     [Alias('a')]
     [switch]$All
 )
+
+. $PSScriptRoot/utils.ps1
+EnsureTopDirectory
 
 $DO_FRONTEND    = $Frontend -or $All
 $DO_BACKEND     = $Backend -or $All
