@@ -11,7 +11,7 @@ function Log-Success {
     param (
         [string]$Message
     )
-    Write-Host ">>> $Message." -ForegroundColor DarkGreen
+    Write-Host ">>> ✅ $Message." -ForegroundColor DarkGreen
 }
 
 function Log-Error {

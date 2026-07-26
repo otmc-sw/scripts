@@ -18,8 +18,15 @@ param(
     [switch]$All
 )
 
+$BUILD_FRONTEND    = $Frontend -or $All
+$BUILD_BACKEND     = $Backend -or $All
+
+if (-not $BUILD_FRONTEND -and -not $BUILD_BACKEND) {
+    $BUILD_FRONTEND = $true
+}
+
 Write-Host "+++ 📚 Welcome to Project Builder +++" -ForegroundColor Cyan
-if ($Frontend -or $All) {
+if ($BUILD_FRONTEND) {
     Set-Location $TOP/frontend
     Log-Step "🌿 Building Frontend..."
     npm run build
@@ -27,7 +34,7 @@ if ($Frontend -or $All) {
     Log-Success "Frontend built successfully."
 }
 
-if ($Backend -or $All) {
+if ($BUILD_BACKEND) {
     Set-Location $TOP/backend
     Log-Step "🌿 Building Backend..."
     go build -o ./data/main.exe
