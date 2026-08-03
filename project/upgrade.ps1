@@ -32,6 +32,7 @@ try {
         Set-Location frontend
         Log-Step "🧹 Step 1/5 : Remove ESLint"
         Run { npm uninstall eslint @eslint/js typescript-eslint eslint-plugin-react-hooks eslint-plugin-react-refresh }
+        Run { Remove-Item eslint.config.js -Force -ErrorAction SilentlyContinue }
 
         Log-Step "🔍 Step 2/5 : Check Available Updates"
         Run { npx npm-check-updates }
@@ -45,9 +46,9 @@ try {
 
         Log-Step "🚀 Step 3/5 : Upgrade package.json"
         Run { npx npm-check-updates -u }
-        Run { Remove-Item package-lock.json -Force -ErrorAction SilentlyContinue }
 
         Log-Step "📦 Step 4/5 : Install Packages"
+        Run { Remove-Item package-lock.json -Force -ErrorAction SilentlyContinue }
         Run { npm install }
 
         Log-Step "🌿 Step 5/5 : Build"
