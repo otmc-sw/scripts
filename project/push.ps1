@@ -8,20 +8,28 @@
 EnsureTopDirectory
 
 function Update-ShellExecutable {
-    $updated = git ls-files '*.sh' | ForEach-Object {
-        if ((git ls-files --stage -- $_) -match '^100644') {
-            git update-index --chmod=+x -- $_
-            $_
-        }
+    $files = git ls-files '*.sh' | Where-Object {
+        (git ls-files --stage -- $_) -match '^100644'
     }
 
-    if ($updated) {
-        Log-Step "♻️ Updated executable bit ..."
-        $updated | ForEach-Object { Write-Host "  $_" }
-    }
-    else {
+    if (-not $files) {
         Log-Success "All shell scripts are already executable."
+        return
     }
+
+    Log-Step "🧩 The following shell scripts will be marked as executable:"
+    $files | ForEach-Object { Write-Host "       → 📝 $_" -ForegroundColor DarkYellow }
+
+    if ((Read-Host "`nSet +x for these files? (y/N)") -notmatch '^(?i:y|yes)$') {
+        Log-Warning "Cancelled."
+        return
+    }
+
+    $files | ForEach-Object {
+        git update-index --chmod=+x -- $_
+    }
+
+    Log-Success "Updated executable bit for $($files.Count) file(s)."
 }
 
 function Push-Changes {
