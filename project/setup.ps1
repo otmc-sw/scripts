@@ -12,15 +12,11 @@ try {
     Set-Location $TOP/frontend
     npm install
     Error-Handler $LASTEXITCODE
-    npm audit fix
-    Error-Handler $LASTEXITCODE
     Log-Success "Frontend setup completed."
 
     Log-Step "🧪 Setting up Playwright ..."
     Set-Location $TOP/tests/playwright
     npm install
-    Error-Handler $LASTEXITCODE
-    npm audit fix
     Error-Handler $LASTEXITCODE
     Log-Success "Playwright setup completed."
 } finally {
