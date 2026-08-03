@@ -15,21 +15,21 @@ function Log-Success {
     param (
         [string]$Message
     )
-    Write-Host ">>> 🎉 $Message." -ForegroundColor DarkGreen
+    Write-Host ">>> 🎉 $Message" -ForegroundColor DarkGreen
 }
 
 function Log-Error {
     param (
         [string]$Message
     )
-    Write-Host "❌ $Message" -ForegroundColor Red
+    Write-Host ">>> ❌ $Message" -ForegroundColor Red
 }
 
 function Log-Warning {
     param (
         [string]$Message
     )
-    Write-Host "⚠️ $Message" -ForegroundColor Yellow
+    Write-Host ">>> ⚠️ $Message" -ForegroundColor Yellow
 }
 
 function Error-Handler {
@@ -58,11 +58,11 @@ function Run($command) {
 
 function EnsureTopDirectory() {
     if (-not $TOP) {
-        Write-Error "ERROR: Variable TOP is not defined."
+        Log-Error "Variable TOP is not defined."
         exit 1
     }
 
-    Write-Host "### 🌿 Working directory: $TOP" -ForegroundColor Blue
+    Log-Step "🌿 Working directory: $TOP"
     Set-Location $TOP
 }
 
