@@ -59,21 +59,15 @@ try {
         Set-Location backend
 
         Log-Step "Step 1/4 : Check Available Updates"
-        Write-Host ""
-        Write-Host "Checking for Go module updates..." -ForegroundColor Yellow
-        Run { go list -u -m all 2>&1 }
-        Write-Host ""
-        Write-Host "Review the upgrade list above." -ForegroundColor Yellow
-        Write-Host "Modules with '[]' indicate available updates." -ForegroundColor Yellow
+        Show-GoModuleUpdates
         Write-Host ""
         $answer = Read-Host "Continue? (Y/N)"
-
-        if ($answer -notin @("Y","y")) {
+        if ($answer -notmatch '^[Yy]$') {
             Write-Host ""
             Write-Host "Cancelled." -ForegroundColor Yellow
             exit
         }
-
+        
         Log-Step "Step 2/4 : Upgrade go.mod"
         Run { go get -u ./... }
 
