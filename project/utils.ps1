@@ -25,6 +25,13 @@ function Log-Error {
     Write-Host "❌ $Message" -ForegroundColor Red
 }
 
+function Log-Warning {
+    param (
+        [string]$Message
+    )
+    Write-Host "⚠️ $Message" -ForegroundColor Yellow
+}
+
 function Error-Handler {
     param (
         [int]$LastExitCode
@@ -40,7 +47,7 @@ function Warning-Handler {
     param (
         [string]$Message
     )
-    Write-Host "⚠️ $Message" -ForegroundColor Yellow
+    Log-Warning $Message
 }
 
 function Run($command) {
