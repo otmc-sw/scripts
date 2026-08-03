@@ -32,10 +32,10 @@ try {
     if ($DO_FRONTEND) {
         Set-Location frontend
         Log-Step "Step 1/5 : Remove ESLint"
-        Run "npm uninstall eslint @eslint/js typescript-eslint eslint-plugin-react-hooks eslint-plugin-react-refresh"
+        Run { npm uninstall eslint @eslint/js typescript-eslint eslint-plugin-react-hooks eslint-plugin-react-refresh }
 
         Log-Step "Step 2/5 : Check Available Updates"
-        Run "npx npm-check-updates"
+        Run { npx npm-check-updates }
         Write-Host ""
         Write-Host "Review the upgrade list above." -ForegroundColor Yellow
         $answer = Read-Host "Continue? (Y/N)"
@@ -46,13 +46,13 @@ try {
         }
 
         Log-Step "Step 3/5 : Upgrade package.json"
-        Run "npx npm-check-updates -u"
+        Run { npx npm-check-updates -u }
 
         Log-Step "Step 4/5 : Install Packages"
-        Run "npm install"
+        Run { npm install }
 
         Log-Step "Step 5/5 : Build"
-        Run "npm run build"
+        Run { npm run build }
     }
 
     if ($DO_BACKEND) {
@@ -61,7 +61,7 @@ try {
         Log-Step "Step 1/4 : Check Available Updates"
         Write-Host ""
         Write-Host "Checking for Go module updates..." -ForegroundColor Yellow
-        $updatesOutput = Run "go list -u -m all 2>&1"
+        $updatesOutput = Run { go list -u -m all 2>&1 }
         Write-Host ""
         Write-Host "Review the upgrade list above." -ForegroundColor Yellow
         Write-Host "Modules with '[' indicate available updates." -ForegroundColor Yellow
@@ -75,13 +75,13 @@ try {
         }
 
         Log-Step "Step 2/4 : Upgrade go.mod"
-        Run "go get -u ./..."
+        Run { go get -u ./... }
 
         Log-Step "Step 3/4 : Tidy Modules"
-        Run "go mod tidy"
+        Run { go mod tidy }
 
         Log-Step "Step 4/4 : Build"
-        Run "go build -o bin/server.exe ."
+        Run { go build -o bin/server.exe . }
     }
 }
 finally {

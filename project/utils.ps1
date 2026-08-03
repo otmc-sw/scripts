@@ -50,9 +50,13 @@ function Warning-Handler {
     Log-Warning $Message
 }
 
-function Run($command) {
-    Write-Host "`n>> $command" -ForegroundColor Blue
-    Invoke-Expression $command
+function Run {
+    param(
+        [scriptblock]$Command
+    )
+
+    Write-Host "`n>> $Command" -ForegroundColor Blue
+    & $Command
     Error-Handler $LASTEXITCODE
 }
 
