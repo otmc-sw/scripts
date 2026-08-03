@@ -1,10 +1,6 @@
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
-github.com/otmc-sw/logger v0.1.11 h1:1VzxMx56DnfUFG+xR5xtU7zawd17qwirA54YTI4xzHg=
-github.com/otmc-sw/logger v0.1.11/go.mod h1:QD4ntQ1Hu4KEQjYInCpHgO8x/8fV6duZemsf1J2iNiw=
 github.com/otmc-sw/logger v0.1.13 h1:x7Nh/qSgyO/1ATBAq7mSXFpaATtOQyuxEm2ZUzDNhJY=
 github.com/otmc-sw/logger v0.1.13/go.mod h1:QD4ntQ1Hu4KEQjYInCpHgO8x/8fV6duZemsf1J2iNiw=
-github.com/otmc-sw/rest v0.1.30 h1:Tw3/F9DmDNkAfIFbS23xOfk5PtWXo12cgfUzj+BLtzA=
-github.com/otmc-sw/rest v0.1.30/go.mod h1:uo18fRIsYjSUWe9Hb/Cc+FsMobp81M/ENoiNTpZCAD4=
 github.com/otmc-sw/rest v0.1.36 h1:+lGtZ7YEjxN563yZg71wC5RM0fLhKnWIuu3rzWokrUg=
 github.com/otmc-sw/rest v0.1.36/go.mod h1:7xixSbxjxFcyh86G4DOS3FLytrGKURJJikil8Xx96rk=
