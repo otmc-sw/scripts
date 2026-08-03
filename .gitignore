@@ -1,0 +1,33 @@
+#
+# MIT License.
+# Copyright (c) 2026 OTMC Softwares.
+# Contributors: Trung Ng.
+# 
+
+# IDEs
+.idea/
+.vscode/
+
+# Cache
+logs/
+data/
+build/
+
+# Node.JS
+package-lock.json
+playwright-report
+test-results
+node_modules
+dist
+dist-ssr
+*.local
+
+# Go
+bin/
+*.exe
+*.log
+
+# Python
+*.pyc
+__pycache__/
+

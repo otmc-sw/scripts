@@ -61,10 +61,10 @@ try {
         Log-Step "Step 1/4 : Check Available Updates"
         Write-Host ""
         Write-Host "Checking for Go module updates..." -ForegroundColor Yellow
-        $updatesOutput = Run { go list -u -m all 2>&1 }
+        Run { go list -u -m all 2>&1 }
         Write-Host ""
         Write-Host "Review the upgrade list above." -ForegroundColor Yellow
-        Write-Host "Modules with '[' indicate available updates." -ForegroundColor Yellow
+        Write-Host "Modules with '[]' indicate available updates." -ForegroundColor Yellow
         Write-Host ""
         $answer = Read-Host "Continue? (Y/N)"
 
