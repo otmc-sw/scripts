@@ -35,11 +35,17 @@ function Log-Warning {
 function Error-Handler {
     param (
         [int]$LastExitCode,
-        [string]$Message = "Unknown message"
+        [string]$Message = ""
     )
-    
+
     if ($LastExitCode -ne 0) {
-        Log-Error "Exit code $LastExitCode: $Message"
+        $errorMessage = "Exit code $LastExitCode"
+
+        if (-not [string]::IsNullOrWhiteSpace($Message)) {
+            $errorMessage += ": $Message"
+        }
+
+        Log-Error $errorMessage
         exit $LastExitCode
     }
 }
