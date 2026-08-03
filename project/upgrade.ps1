@@ -25,7 +25,6 @@ if (-not $DO_FRONTEND -and -not $DO_BACKEND) {
     $DO_BACKEND = $true
 }
 
-Clear-Host
 $ErrorActionPreference = "Stop"
 
 try {
