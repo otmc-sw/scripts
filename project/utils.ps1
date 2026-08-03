@@ -34,11 +34,12 @@ function Log-Warning {
 
 function Error-Handler {
     param (
-        [int]$LastExitCode
+        [int]$LastExitCode,
+        [string]$Message = "Unknown message"
     )
     
     if ($LastExitCode -ne 0) {
-        Log-Error "Command failed with exit code $LastExitCode"
+        Log-Error "Exit code $LastExitCode: $Message"
         exit $LastExitCode
     }
 }
@@ -57,7 +58,7 @@ function Run {
 
     Write-Host "`n>> $Command" -ForegroundColor Blue
     & $Command
-    Error-Handler $LASTEXITCODE
+    Error-Handler $LASTEXITCODE "Command failed: $Command"
 }
 
 function EnsureTopDirectory() {
@@ -72,7 +73,7 @@ function EnsureTopDirectory() {
 
 function Get-GoDirectDependencies {
     $json = & go mod edit -json 2>&1
-    Error-Handler $LASTEXITCODE
+    Error-Handler $LASTEXITCODE "Failed to get go mod edit -json: $json"
 
     $mod = $json | ConvertFrom-Json
 
@@ -99,7 +100,7 @@ function Get-GoModuleUpdates {
 
     foreach ($dep in $Dependencies) {
         $output = & go list -u -m $dep.Package 2>&1
-        Error-Handler $LASTEXITCODE
+        Error-Handler $LASTEXITCODE "Failed to check updates for $dep.Package: `n$output"
 
         if ($output -match '^(?<pkg>\S+)\s+(?<old>v\S+)\s+\[(?<new>[^\]]+)\]$') {
             $updates += [PSCustomObject]@{
@@ -161,7 +162,7 @@ function Update-GoModules {
         $cmd = "go get $($u.Package)@latest"
         Write-Host "`n>> $cmd" -ForegroundColor Blue
         & go get "$($u.Package)@latest"
-        Error-Handler $LASTEXITCODE
+        Error-Handler $LASTEXITCODE "Failed to update $u.Package"
     }
 }
 
