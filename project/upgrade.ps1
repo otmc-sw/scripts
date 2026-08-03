@@ -63,7 +63,7 @@ try {
         Write-Host "Found $($direct.Count) direct dependencies." -ForegroundColor Cyan
 
         Log-Step "🔍 Step 2/5 : Check Available Updates"
-        $updates = Get-GoModuleUpdates -Dependencies $direct
+        $updates = Get-GoModuleUpdates -DirectDependencies $direct
         Show-GoModuleUpdates -Updates $updates
 
         if (-not $updates -or $updates.Count -eq 0) {
