@@ -58,24 +58,47 @@ try {
     if ($DO_BACKEND) {
         Set-Location backend
 
-        Log-Step "Step 1/4 : Check Available Updates"
-        Show-GoModuleUpdates
+        Log-Step "Step 1/7 : Get Direct Dependencies"
+        $direct = Get-GoDirectDependencies
+        Write-Host "Found $($direct.Count) direct dependencies." -ForegroundColor Cyan
+
+        Log-Step "Step 2/7 : Check Available Updates"
+        $updates = Get-GoModuleUpdates -Dependencies $direct
+        Show-GoModuleUpdates -Updates $updates
+
+        if (-not $updates -or $updates.Count -eq 0) {
+            Write-Host ""
+            Write-Host "Nothing to upgrade." -ForegroundColor Yellow
+            exit
+        }
+
         Write-Host ""
-        $answer = Read-Host "Continue? (Y/N)"
+        $answer = Read-Host "Upgrade these packages? (Y/N)"
         if ($answer -notmatch '^[Yy]$') {
             Write-Host ""
             Write-Host "Cancelled." -ForegroundColor Yellow
             exit
         }
-        
-        Log-Step "Step 2/4 : Upgrade go.mod"
-        Run { go get -u ./... }
 
-        Log-Step "Step 3/4 : Tidy Modules"
+        Log-Step "Step 3/7 : Upgrade Direct Dependencies"
+        Update-GoModules -Updates $updates
+
+        Log-Step "Step 4/7 : Tidy Modules"
         Run { go mod tidy }
 
-        Log-Step "Step 4/4 : Build"
-        Run { go build -o bin/server.exe . }
+        Log-Step "Step 5/7 : Build"
+        Run { go build ./... }
+
+        Log-Step "Step 6/7 : Test"
+        $testFiles = Get-ChildItem -Filter "*_test.go" -Recurse
+        if ($testFiles) {
+            Run { go test ./... }
+        } else {
+            Log-Warning "No test files found. Skipping tests."
+        }
+
+        Log-Step "Step 7/7 : Done"
+        Log-Success "Backend dependencies upgraded successfully."
     }
 }
 finally {

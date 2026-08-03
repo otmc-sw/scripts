@@ -1,13 +1,11 @@
 package main
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/otmc-sw/logger"
+	rest "github.com/otmc-sw/rest"
+)
 
 func main() {
-	app := fiber.New()
-
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello")
-	})
-
-	app.Listen(":8080")
+	logger.New()
+	rest.Debug(true)
 }

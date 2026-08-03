@@ -70,45 +70,99 @@ function EnsureTopDirectory() {
     Set-Location $TOP
 }
 
-function Show-GoModuleUpdates {
-
-    $modules = & go list -u -m all 2>&1
-
+function Get-GoDirectDependencies {
+    $json = & go mod edit -json 2>&1
     Error-Handler $LASTEXITCODE
 
-    $updates = foreach ($line in $modules) {
-        if ($line -match '^(?<pkg>\S+)\s+(?<old>v\S+)\s+\[(?<new>[^\]]+)\]$') {
-            [PSCustomObject]@{
-                Package = $Matches.pkg
-                Current = ($Matches.old -replace '^(v\d+\.\d+\.\d+).*$', '$1')
-                New     = ($Matches.new -replace '^(v\d+\.\d+\.\d+).*$', '$1')
+    $mod = $json | ConvertFrom-Json
+
+    $direct = @()
+    foreach ($req in $mod.Require) {
+        if (-not $req.Indirect) {
+            $direct += [PSCustomObject]@{
+                Package = $req.Path
+                Version = $req.Version
             }
         }
     }
 
-    if (-not $updates) {
-        Log-Success "All Go modules are up to date."
+    return $direct
+}
+
+function Get-GoModuleUpdates {
+    param(
+        [Parameter(Mandatory = $true)]
+        [object[]]$Dependencies
+    )
+
+    $updates = @()
+
+    foreach ($dep in $Dependencies) {
+        $output = & go list -u -m $dep.Package 2>&1
+        Error-Handler $LASTEXITCODE
+
+        if ($output -match '^(?<pkg>\S+)\s+(?<old>v\S+)\s+\[(?<new>[^\]]+)\]$') {
+            $updates += [PSCustomObject]@{
+                Package         = $Matches.pkg
+                CurrentVersion  = $Matches.old
+                LatestVersion   = $Matches.new
+            }
+        }
+    }
+
+    return $updates
+}
+
+function Show-GoModuleUpdates {
+    param(
+        [object[]]$Updates
+    )
+
+    if (-not $Updates -or $Updates.Count -eq 0) {
+        Log-Success "All direct dependencies are up to date."
         return
     }
 
     $pkgWidth = [Math]::Max(
         7,
-        ($updates | ForEach-Object { $_.Package.Length } | Measure-Object -Maximum).Maximum
+        ($Updates | ForEach-Object { $_.Package.Length } | Measure-Object -Maximum).Maximum
+    )
+
+    $curWidth = [Math]::Max(
+        7,
+        ($Updates | ForEach-Object { $_.CurrentVersion.Length } | Measure-Object -Maximum).Maximum
+    )
+
+    $latestWidth = [Math]::Max(
+        6,
+        ($Updates | ForEach-Object { $_.LatestVersion.Length } | Measure-Object -Maximum).Maximum
     )
 
     Write-Host ""
-    Write-Host ("{0,-$pkgWidth}  {1,-18}  {2}" -f "Package", "Current", "Latest")
-    Write-Host ("-" * ($pkgWidth + 32))
+    Write-Host ("{0,-$pkgWidth}  {1,-$curWidth}  {2,-$latestWidth}" -f "Package", "Current", "Latest")
+    Write-Host ("-" * ($pkgWidth + $curWidth + $latestWidth + 4))
 
-    foreach ($u in $updates) {
-
-        Write-Host ("{0,-$pkgWidth}  " -f $u.Package) -ForegroundColor Blue -NoNewline
-        Write-Host ("{0,-18}  " -f $u.Current)        -ForegroundColor Red -NoNewline
-        Write-Host $u.New                            -ForegroundColor Green
+    foreach ($u in $Updates) {
+        Write-Host ("{0,-$pkgWidth}  " -f $u.Package)        -ForegroundColor Blue -NoNewline
+        Write-Host ("{0,-$curWidth}  " -f $u.CurrentVersion) -ForegroundColor Red -NoNewline
+        Write-Host ("{0,-$latestWidth}" -f $u.LatestVersion) -ForegroundColor Green
     }
 
     Write-Host ""
-    Write-Host "$($updates.Count) module(s) can be upgraded." -ForegroundColor Yellow
+}
+
+function Update-GoModules {
+    param(
+        [Parameter(Mandatory = $true)]
+        [object[]]$Updates
+    )
+
+    foreach ($u in $Updates) {
+        $cmd = "go get $($u.Package)@latest"
+        Write-Host "`n>> $cmd" -ForegroundColor Blue
+        & go get "$($u.Package)@latest"
+        Error-Handler $LASTEXITCODE
+    }
 }
 
 
