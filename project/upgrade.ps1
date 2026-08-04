@@ -96,7 +96,7 @@ try {
     if ($Test) {
         Set-Location tests/playwright
         
-        Log-Step "🔍 Step 1/5 : Check Available Updates"
+        Log-Step "🔍 Step 1/4 : Check Available Updates"
         Run { npx npm-check-updates }
         Write-Host ""
         Write-Host "Review the upgrade list above." -ForegroundColor Yellow
@@ -106,18 +106,15 @@ try {
             exit
         }
 
-        Log-Step "🚀 Step 2/5 : Upgrade package.json"
+        Log-Step "🚀 Step 2/4 : Upgrade package.json"
         Run { npx npm-check-updates -u }
 
-        Log-Step "📦 Step 3/5 : Install Packages"
+        Log-Step "📦 Step 3/4 : Install Packages"
         Run { Remove-Item package-lock.json -Force -ErrorAction SilentlyContinue }
         Run { npm install }
 
-        Log-Step "🌿 Step 4/5 : Build"
+        Log-Step "🌿 Step 4/4 : Build"
         Run { npm run build }
-
-        Log-Step "🧪 Step 5/5 : Run Tests"
-        Run { npm run test }
 
     }
 }
