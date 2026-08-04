@@ -113,9 +113,7 @@ try {
         Run { Remove-Item package-lock.json -Force -ErrorAction SilentlyContinue }
         Run { npm install }
 
-        Log-Step "🌿 Step 4/4 : Build"
-        Run { npm run build }
-
+        Log-Success "Playwright dependencies upgraded successfully."
     }
 }
 finally {
