@@ -11,6 +11,9 @@ param(
     [Alias('b')]
     [switch]$Backend,
 
+    [Alias('t')]
+    [switch]$Test,
+
     [Alias('a')]
     [switch]$All
 )
@@ -20,8 +23,9 @@ EnsureTopDirectory
 
 $DO_FRONTEND    = $Frontend -or $All
 $DO_BACKEND     = $Backend -or $All
+$DO_TEST        = $Test -or $All
 
-if (-not $DO_FRONTEND -and -not $DO_BACKEND) {
+if (-not $DO_FRONTEND -and -not $DO_BACKEND -and -not $DO_TEST) {
     $DO_BACKEND = $true
 }
 
@@ -87,6 +91,34 @@ try {
         Run { go build ./... }
 
         Log-Success "Backend dependencies upgraded successfully."
+    }
+    
+    if ($Test) {
+        Set-Location tests/playwright
+        
+        Log-Step "🔍 Step 1/5 : Check Available Updates"
+        Run { npx npm-check-updates }
+        Write-Host ""
+        Write-Host "Review the upgrade list above." -ForegroundColor Yellow
+        $answer = Read-Host "Continue? (Y/N)"
+        if ($answer -notin @("Y","y")) {
+            Log-Warning "Cancelled."
+            exit
+        }
+
+        Log-Step "🚀 Step 2/5 : Upgrade package.json"
+        Run { npx npm-check-updates -u }
+
+        Log-Step "📦 Step 3/5 : Install Packages"
+        Run { Remove-Item package-lock.json -Force -ErrorAction SilentlyContinue }
+        Run { npm install }
+
+        Log-Step "🌿 Step 4/5 : Build"
+        Run { npm run build }
+
+        Log-Step "🧪 Step 5/5 : Run Tests"
+        Run { npm run test }
+
     }
 }
 finally {
