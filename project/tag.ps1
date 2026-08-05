@@ -5,9 +5,9 @@
 #
 
 Param(
-    [Parameter(Mandatory = $true, Position = 0, HelpMessage = "Action: 'b' (build tag) or 'r' (reset branch to tag)")]
+    [Parameter(Position = 0, HelpMessage = "Action: 'b' (build tag) or 'r' (reset branch to tag). Defaults to 'b' if not specified.")]
     [ValidateSet("b", "r")]
-    [string]$Action,
+    [string]$Action = "b",
 
     [Parameter(Mandatory = $false, Position = 1, HelpMessage = "Tag name (Optional, auto-increments if empty)")]
     [string]$TagName = "",
