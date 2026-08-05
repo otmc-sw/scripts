@@ -26,14 +26,14 @@ $LicenseHeaders = @{
  * @License Apache License 2.0
  * @Copyright (c) 2026 OTMC Softwares.
  * @Contributors Nguyen Van Trung, OTMC Contributors.
- **/
+**/
 "@
     "OTMC License"       = @"
 /**
  * @License OTMC License
  * @Copyright (c) 2026 OTMC Softwares. All rights reserved.
  * @Contributors Nguyen Van Trung, OTMC Contributors.
- **/
+**/
 "@
 }
 
