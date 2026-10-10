@@ -6,9 +6,6 @@
 
 . $PSScriptRoot/utils.ps1
 EnsureTopDirectory
-
-Write-Host "+++ 📚 Welcome to Project Setup +++" -ForegroundColor Cyan
-
 Add-EnvAutoSource
 
 try {

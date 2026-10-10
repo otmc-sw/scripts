@@ -163,7 +163,7 @@ function Add-EnvAutoSource {
 
     # Check whether the configuration already exists
     if ($content -and $content.Contains($marker)) {
-        Write-Host '📚 Auto-source configuration already exists.' -ForegroundColor Yellow
+        Write-Host 'Auto-source configuration already exists.' -ForegroundColor Yellow
         return
     }
 
@@ -180,7 +180,6 @@ if (Test-Path $envScript -PathType Leaf) {
 '@
 
     Add-Content -Path $ProfilePath -Value $script
-
     Write-Host "📝 NOTE: Auto-source configuration added to: $ProfilePath" -ForegroundColor Green
 }
 
