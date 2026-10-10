@@ -7,6 +7,10 @@
 . $PSScriptRoot/utils.ps1
 EnsureTopDirectory
 
+Write-Host "+++ 📚 Welcome to Project Setup +++" -ForegroundColor Cyan
+
+Add-EnvAutoSource
+
 try {
     Log-Step "💻 Setting up Frontend ..."
     Set-Location $TOP/frontend

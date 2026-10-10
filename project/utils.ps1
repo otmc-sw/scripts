@@ -137,3 +137,50 @@ function Update-GoModules {
         Error-Handler $LASTEXITCODE "Failed to update $($u.Package)"
     }
 }
+
+function Add-EnvAutoSource {
+    param(
+        [string]$ProfilePath = $PROFILE
+    )
+
+    $marker = '# Auto-source env.ps1 in the current directory'
+
+    # Create profile if it does not exist
+    $profileDir = Split-Path -Parent $ProfilePath
+
+    if (!(Test-Path $profileDir)) {
+        New-Item -ItemType Directory -Path $profileDir -Force |
+            Out-Null
+    }
+
+    if (!(Test-Path $ProfilePath)) {
+        New-Item -ItemType File -Path $ProfilePath -Force |
+            Out-Null
+    }
+
+    # Read existing profile
+    $content = Get-Content $ProfilePath -Raw
+
+    # Check whether the configuration already exists
+    if ($content -and $content.Contains($marker)) {
+        Write-Host '📚 Auto-source configuration already exists.' -ForegroundColor Yellow
+        return
+    }
+
+    # Append configuration
+    $script = @'
+
+# Auto-source env.ps1 in the current directory
+$envScript = Join-Path (Get-Location) 'env.ps1'
+
+if (Test-Path $envScript -PathType Leaf) {
+    Write-Host "✨ Auto-sourcing env.ps1 from: $envScript" -ForegroundColor Green
+    . $envScript
+}
+'@
+
+    Add-Content -Path $ProfilePath -Value $script
+
+    Write-Host "📝 NOTE: Auto-source configuration added to: $ProfilePath" -ForegroundColor Green
+}
+
