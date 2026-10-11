@@ -27,6 +27,7 @@ if (-not $BUILD_FRONTEND -and -not $BUILD_BACKEND) {
 }
 
 Write-Host "+++ 📚 Welcome to Project Builder +++" -ForegroundColor Cyan
+
 if ($BUILD_FRONTEND) {
     Set-Location $TOP/frontend
     Log-Step "🌿 Building Frontend..."

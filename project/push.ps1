@@ -44,5 +44,6 @@ function Push-Changes {
 }
 
 Write-Host "+++ 📚 Welcome to Source Pusher +++" -ForegroundColor Cyan
+
 Update-ShellExecutable
 Push-Changes
