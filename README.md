@@ -1,6 +1,7 @@
 # 🌿 OTMC Scripts
 Where store scripts for managing the OTMC project.
 
+# 📚 Content
 | Script       | Name                | Description                                 |
 |--------------|---------------------|---------------------------------------------|
 | `build.ps1`  | **Project Builder** | Build frontend and backend projects         |
