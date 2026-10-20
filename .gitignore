@@ -12,6 +12,7 @@
 logs/
 data/
 build/
+tests/
 
 # Node.JS
 package-lock.json
