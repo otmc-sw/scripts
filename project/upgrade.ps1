@@ -53,7 +53,7 @@ try {
 
         Log-Step "📦 Step 4/5 : Install Packages"
         Run { Remove-Item package-lock.json -Force -ErrorAction SilentlyContinue }
-        Run { Remove-Item node_modules -Force -ErrorAction SilentlyContinue }
+        Run { Remove-Item node_modules -Recurse -Force -ErrorAction SilentlyContinue }
         Run { npm install }
 
         Log-Step "🌿 Step 5/5 : Build"
@@ -112,7 +112,7 @@ try {
 
         Log-Step "📦 Step 3/4 : Install Packages"
         Run { Remove-Item package-lock.json -Force -ErrorAction SilentlyContinue }
-        Run { Remove-Item node_modules -Force -ErrorAction SilentlyContinue }
+        Run { Remove-Item node_modules -Recurse -Force -ErrorAction SilentlyContinue }
         Run { npm install }
 
         Log-Success "Playwright dependencies upgraded successfully."
