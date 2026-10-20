@@ -18,7 +18,7 @@ function tag { Set-Location $TOP; & "$TOP\project\tag.ps1" @args }
 function u   { Set-Location $TOP; & "$TOP\project\upgrade.ps1" @args }
 
 Write-Host ""
-Write-Host "   >>> Environment Loaded on Windows!" -ForegroundColor Blue
-Write-Host "   >>> Source directory: '$TOP'" -ForegroundColor Blue
+Write-Host "   >>> 🧩 Environment Loaded on Windows." -ForegroundColor Blue
+Write-Host "   >>> 📂 Source directory: '$TOP'" -ForegroundColor Blue
 Write-Host ""
 
