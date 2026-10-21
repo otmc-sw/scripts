@@ -20,6 +20,18 @@ $packages = @(
     [pscustomobject]@{
         Name = 'Git'
         Id   = 'Git.Git'
+    },
+    [pscustomobject]@{
+        Name = 'Node.js'
+        Id   = 'OpenJS.NodeJS.LTS'
+    },
+    [pscustomobject]@{
+        Name = 'Terminal'
+        Id   = 'Microsoft.WindowsTerminal'
+    },
+    [pscustomobject]@{
+        Name = 'GoLang'
+        Id   = 'GoLang.Go'
     }
 )
 
@@ -56,12 +68,13 @@ function Get-InstalledVersion {
 
     foreach ($line in $listOutput) {
         $fields = @(($line -split '\s+') | Where-Object { $_ -ne '' })
-        if (
-            $fields.Count -ge 3 -and
-            $fields[0] -ne 'Name' -and
-            $line -notmatch '^-+$'
-        ) {
-            $version = $fields[2]
+        $idIndex = [Array]::IndexOf($fields, $Id)
+        # The Version column is always the token immediately after the Id.
+        # Anchoring on the exact Id (instead of a fixed column index) is
+        # safe even when the package Name itself contains spaces.
+        if ($idIndex -ge 0 -and $idIndex -lt ($fields.Count - 1)) {
+            $version = $fields[$idIndex + 1]
+            break
         }
     }
 
@@ -109,6 +122,7 @@ foreach ($package in $packages) {
                 $results.Add([pscustomobject]@{
                     Package = $package.Name
                     Status  = 'Completed'
+                    Version = (Get-InstalledVersion -Id $package.Id)
                     Details = if ($noUpdate) { 'Already up to date.' } else { 'winget exited successfully; review output above.' }
                 })
                 Write-Host "$($package.Name): winget completed successfully." -ForegroundColor Green
@@ -117,6 +131,7 @@ foreach ($package in $packages) {
                 $results.Add([pscustomobject]@{
                     Package = $package.Name
                     Status  = 'Failed'
+                    Version = (Get-InstalledVersion -Id $package.Id)
                     Details = "winget exit code: $exitCode"
                 })
                 Write-Host "$($package.Name): winget exited with code $exitCode." -ForegroundColor Red
@@ -126,6 +141,7 @@ foreach ($package in $packages) {
             $results.Add([pscustomobject]@{
                 Package = $package.Name
                 Status  = 'Failed'
+                Version = (Get-InstalledVersion -Id $package.Id)
                 Details = $_.Exception.Message
             })
             Write-Host "$($package.Name): $($_.Exception.Message)" -ForegroundColor Red
@@ -135,22 +151,14 @@ foreach ($package in $packages) {
         $results.Add([pscustomobject]@{
             Package = $package.Name
             Status  = 'Skipped'
+            Version = (Get-InstalledVersion -Id $package.Id)
             Details = 'Previewed or declined by ShouldProcess.'
         })
     }
 }
 
 # ---------- Summary ----------
-Write-Host "`n========== SUMMARY ==========" -ForegroundColor Cyan
-
-foreach ($package in $packages) {
-    $version = Get-InstalledVersion -Id $package.Id
-    $versionText = if ($version) { $version } else { 'N/A' }
-    Write-Host ("{0,-12} Current version: {1}" -f $package.Name, $versionText)
-}
-
 $results | Format-Table -AutoSize
-
 $failed = @($results | Where-Object { $_.Status -eq 'Failed' })
 if ($failed.Count -gt 0) {
     exit 1
