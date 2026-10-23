@@ -31,24 +31,22 @@ if ([string]::IsNullOrWhiteSpace($TagName)) {
         $TagName = "v0.0.1"
         Log-Warn "No tags found in repository. Defaulting to '$TagName'."
     } else {
-        # Regex tìm chuỗi số cuối cùng trong tag và cộng 1
+
         if ($LatestTag -match '^(.*?)(?<number>\d+)([^0-9]*)$') {
             $Prefix = $Matches[1]
             $Number = [int]$Matches['number'] + 1
             $Suffix = $Matches[3]
-            # Giữ nguyên định dạng số chữ số (padding) nếu có (VD: v0.0.09 -> v0.0.10)
+
             $PaddingLength = $Matches['number'].Length
             $FormattedNumber = $Number.ToString("D$PaddingLength")
 
             $TagName = "${Prefix}${FormattedNumber}${Suffix}"
         } else {
-            # Nếu tag không chứa số, tự động thêm .1
             $TagName = "${LatestTag}.1"
         }
         Write-Host "📌 Latest remote tag detected: '$LatestTag' -> Suggested new tag: '$TagName'" -ForegroundColor Yellow
     }
 
-    # Hỏi xác nhận người dùng
     $Confirmation = Read-Host "❓ Confirm to use auto-generated tag '$TagName'? (y/n)"
     if ($Confirmation -notmatch '^(y|yes)$') {
         Log-Error "Operation cancelled by user."
@@ -56,7 +54,6 @@ if ([string]::IsNullOrWhiteSpace($TagName)) {
     }
 }
 
-# --- Thực thi Action ---
 switch ($Action) {
     "b" {
         Log-Step "🧩 Creating tag '$TagName' at commit '$Commit'..."

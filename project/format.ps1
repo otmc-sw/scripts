@@ -170,7 +170,6 @@ foreach ($Dir in $SrcDirs) {
     Write-Host "🚀 Completed processing $Dir with $dirTotal files" -ForegroundColor Green
 }
 
-# --- Dừng đồng hồ & hiển thị kết quả ---
 $Stopwatch.Stop()
 $ElapsedTime = [math]::Round($Stopwatch.Elapsed.TotalSeconds, 2)
 

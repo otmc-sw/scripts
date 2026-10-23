@@ -6,9 +6,9 @@
 
 function Log-Step    { param([string]$Message) Write-Host "`n### $Message" -ForegroundColor DarkBlue }
 function Log-Success { param([string]$Message) Write-Host ">>> 🎉 $Message`n" -ForegroundColor DarkGreen }
-function Log-Info    { param([string]$Message) Write-Host ">>> ✨ $Message" -ForegroundColor Cyan }
+function Log-Info    { param([string]$Message) Write-Host ">>> 🌿 $Message" -ForegroundColor Cyan }
 function Log-Error   { param([string]$Message) Write-Host ">>> ❌ $Message" -ForegroundColor Red }
-function Log-Warning { param([string]$Message) Write-Host ">>> ⚠️ $Message" -ForegroundColor Yellow }
+function Log-Warning { param([string]$Message) Write-Host ">>> 📝 $Message" -ForegroundColor Yellow }
 
 function Error-Handler {
     param (
@@ -58,7 +58,6 @@ function Get-GoDirectDependencies {
 
     $mod = $json | ConvertFrom-Json
 
-    # Lấy danh sách các package trực tiếp (Indirect != $true)
     $directPackages = @{}
     foreach ($req in $mod.Require) {
         if (-not $req.Indirect) {
@@ -77,7 +76,6 @@ function Get-GoModuleUpdates {
 
     Log-Info "Checking updates for all dependencies..."
     
-    # Chạy 1 lệnh duy nhất để lấy thông tin toàn bộ modules thay vì loop từng gói
     $allModules = & go list -u -m all 2>&1
     Error-Handler $LASTEXITCODE "Failed to check module updates: `n$allModules"
 
@@ -86,7 +84,6 @@ function Get-GoModuleUpdates {
     foreach ($line in $allModules) {
         if ($line -match '^(?<pkg>\S+)\s+(?<old>v\S+)\s+\[(?<new>[^\]]+)\]$') {
             $pkg = $Matches.pkg
-            # Chỉ lọc lấy những package thuộc direct dependencies
             if ($DirectDependencies.ContainsKey($pkg)) {
                 $updates.Add([PSCustomObject]@{
                     Package        = $pkg
@@ -144,8 +141,6 @@ function Add-EnvAutoSource {
     )
 
     $marker = '# Auto-source env.ps1 in the current directory'
-
-    # Create profile if it does not exist
     $profileDir = Split-Path -Parent $ProfilePath
 
     if (!(Test-Path $profileDir)) {
@@ -158,23 +153,20 @@ function Add-EnvAutoSource {
             Out-Null
     }
 
-    # Read existing profile
     $content = Get-Content $ProfilePath -Raw
 
-    # Check whether the configuration already exists
     if ($content -and $content.Contains($marker)) {
         Write-Host 'Auto-source configuration already exists.' -ForegroundColor Yellow
         return
     }
 
-    # Append configuration
     $script = @'
 
 # Auto-source env.ps1 in the current directory
 $envScript = Join-Path (Get-Location) 'env.ps1'
 
 if (Test-Path $envScript -PathType Leaf) {
-    Write-Host "✨ Auto-sourcing env.ps1 from: $envScript" -ForegroundColor Green
+    Write-Host "🌿 Auto-sourcing env.ps1 from: $envScript" -ForegroundColor Cyan
     . $envScript
 }
 '@
