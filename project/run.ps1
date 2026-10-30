@@ -10,14 +10,10 @@ param(
 
     [Alias('b')]
     [switch]$Backend,
-
-    [Alias('a')]
-    [switch]$All
 )
 
 . $PSScriptRoot/utils.ps1
 EnsureTopDirectory
-
 
 $RUN_BIN = "data/main.exe"
 
@@ -64,47 +60,36 @@ function Show-Banner {
     Write-Host $line -ForegroundColor $color
 }
 
-function Show-Usage {
-    Write-Host "Usage: run.ps1 [-f] [-b] [-a]" -ForegroundColor Yellow
-    Write-Host "  -f : Run frontend only" -ForegroundColor Yellow
-    Write-Host "  -b : Run backend only" -ForegroundColor Yellow
-    Write-Host "  -a : Run both frontend and backend" -ForegroundColor Yellow
-}
-
 function Run-Frontend {
     Show-Banner -Mode 'frontend'
     Set-Location $TOP/frontend
-    Log "Starting frontend development server..."
+    Log "🚀 Starting frontend development server..."
     npm run dev
 }
 
 function Run-Backend {
     Show-Banner -Mode 'backend'
     Set-Location $TOP/backend
-    Log "Generating SQLC bindings..."
+    Log "🌿 Generating SQLC bindings..."
     sqlc generate
 
-    Log "Tidying Go modules..."
+    Log "✨ Tidying Go modules..."
     go mod tidy
 
-    Log "Building Go application..."
+    Log "📚 Building Go application..."
     go build -o $RUN_BIN
     if ($LASTEXITCODE -ne 0) {
         Log-Error "Go build failed"
         exit 1
     }
 
-    Log "Starting Go application..."
+    Log "🚀 Starting Go application..."
     & $RUN_BIN -d
 }
 
 try {
     if ($Frontend) {
         Run-Frontend
-    }
-    elseif ($All) {
-        Run-Frontend
-        Run-Backend
     }
     else {
         Run-Backend
