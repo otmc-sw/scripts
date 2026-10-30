@@ -24,7 +24,7 @@ $RUN_BIN = "data/main.exe"
 $COLOR_BACKEND  = 'DarkBlue'
 $COLOR_FRONTEND = 'DarkGreen'
 $COLOR_SUB      = 'DarkGray'
-$VERSION        = '0.1.5'
+$VERSION        = '0.1.6'
 
 Set-Location $TOP
 
@@ -72,29 +72,44 @@ try {
     }
     elseif ($All) {
         Set-Location $TOP/frontend
+        Write-Host "Building frontend..."
         npm run build
 
         Show-Banner -Mode 'backend'
         Set-Location $TOP/backend
+        Write-Host "Generating SQLC bindings..."
         sqlc generate
+
+        Write-Host "Tidying Go modules..."
         go mod tidy
+
+        Write-Host "Building Go application..."
         go build -o $RUN_BIN
         if ($LASTEXITCODE -ne 0) {
             Write-Host "Go build failed" -ForegroundColor Red
             exit 1
         }
+
+        Write-Host "Starting Go application..."
         & $RUN_BIN -p 5006 -d
     }
     else {
         Show-Banner -Mode 'backend'
         Set-Location $TOP/backend
+        Write-Host "Generating SQLC bindings..."
         sqlc generate
+
+        Write-Host "Tidying Go modules..."
         go mod tidy
+
+        Write-Host "Building Go application..."
         go build -o $RUN_BIN
         if ($LASTEXITCODE -ne 0) {
             Write-Host "Go build failed" -ForegroundColor Red
             exit 1
         }
+
+        Write-Host "Starting Go application..."
         & $RUN_BIN -d
     }
 }
