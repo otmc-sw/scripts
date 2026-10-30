@@ -4,11 +4,23 @@
 # Contributors: Nguyen Van Trung, Nguyen Thi Hoai, OTMC Contributors.
 #
 
+# Logging functions
+# Format: HH:MM:SS Message
 function Log-Step    { param([string]$Message) Write-Host "`n### $Message" -ForegroundColor DarkBlue }
 function Log-Success { param([string]$Message) Write-Host ">>> 🎉 $Message`n" -ForegroundColor DarkGreen }
 function Log-Info    { param([string]$Message) Write-Host ">>> 🌿 $Message" -ForegroundColor Cyan }
 function Log-Error   { param([string]$Message) Write-Host ">>> ❌ $Message" -ForegroundColor Red }
 function Log-Warning { param([string]$Message) Write-Host ">>> 📝 $Message" -ForegroundColor Yellow }
+
+function Log {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Message
+    )
+
+    $timestamp = Get-Date -Format "HH:mm:ss"
+    Write-Host "$timestamp $Message"
+}
 
 function Error-Handler {
     param (

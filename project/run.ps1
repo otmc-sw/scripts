@@ -24,7 +24,7 @@ $RUN_BIN = "data/main.exe"
 $COLOR_BACKEND  = 'DarkBlue'
 $COLOR_FRONTEND = 'DarkGreen'
 $COLOR_SUB      = 'DarkGray'
-$VERSION        = '0.1.6'
+$VERSION        = '0.1.7'
 
 Set-Location $TOP
 
@@ -64,55 +64,53 @@ function Show-Banner {
     Write-Host $line -ForegroundColor $color
 }
 
+function Show-Usage {
+    Write-Host "Usage: run.ps1 [-f] [-b] [-a]" -ForegroundColor Yellow
+    Write-Host "  -f : Run frontend only" -ForegroundColor Yellow
+    Write-Host "  -b : Run backend only" -ForegroundColor Yellow
+    Write-Host "  -a : Run both frontend and backend" -ForegroundColor Yellow
+}
+
+function Run-Frontend {
+    Show-Banner -Mode 'frontend'
+    Set-Location $TOP/frontend
+    Log "Starting frontend development server..."
+    npm run dev
+}
+
+function Run-Backend {
+    Show-Banner -Mode 'backend'
+    Set-Location $TOP/backend
+    Log "Generating SQLC bindings..."
+    sqlc generate
+
+    Log "Tidying Go modules..."
+    go mod tidy
+
+    Log "Building Go application..."
+    go build -o $RUN_BIN
+    if ($LASTEXITCODE -ne 0) {
+        Log-Error "Go build failed"
+        exit 1
+    }
+
+    Log "Starting Go application..."
+    & $RUN_BIN -d
+}
+
 try {
     if ($Frontend) {
-        Show-Banner -Mode 'frontend'
-        Set-Location $TOP/frontend
-        npm run dev
+        Run-Frontend
     }
     elseif ($All) {
-        Set-Location $TOP/frontend
-        Write-Host "Building frontend..."
-        npm run build
-
-        Show-Banner -Mode 'backend'
-        Set-Location $TOP/backend
-        Write-Host "Generating SQLC bindings..."
-        sqlc generate
-
-        Write-Host "Tidying Go modules..."
-        go mod tidy
-
-        Write-Host "Building Go application..."
-        go build -o $RUN_BIN
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "Go build failed" -ForegroundColor Red
-            exit 1
-        }
-
-        Write-Host "Starting Go application..."
-        & $RUN_BIN -p 5006 -d
+        Run-Frontend
+        Run-Backend
     }
     else {
-        Show-Banner -Mode 'backend'
-        Set-Location $TOP/backend
-        Write-Host "Generating SQLC bindings..."
-        sqlc generate
-
-        Write-Host "Tidying Go modules..."
-        go mod tidy
-
-        Write-Host "Building Go application..."
-        go build -o $RUN_BIN
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "Go build failed" -ForegroundColor Red
-            exit 1
-        }
-
-        Write-Host "Starting Go application..."
-        & $RUN_BIN -d
+        Run-Backend
     }
 }
 finally {
     Set-Location $TOP
 }
+
