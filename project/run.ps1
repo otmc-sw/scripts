@@ -9,7 +9,7 @@ param(
     [switch]$Frontend,
 
     [Alias('b')]
-    [switch]$Backend,
+    [switch]$Backend
 )
 
 . $PSScriptRoot/utils.ps1
