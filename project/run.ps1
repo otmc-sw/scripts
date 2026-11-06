@@ -63,6 +63,10 @@ function Show-Banner {
 function Run-Frontend {
     Show-Banner -Mode 'frontend'
     Set-Location $TOP/frontend
+
+    Log "📚 NPM version: $(npm -v)"
+    Log "📦 Node version: $(node -v)"
+
     Log "🚀 Starting frontend development server..."
     npm run dev
 }
@@ -70,6 +74,9 @@ function Run-Frontend {
 function Run-Backend {
     Show-Banner -Mode 'backend'
     Set-Location $TOP/backend
+
+    Log "📦 Golang version: $(go version)"
+
     Log "🌿 Generating SQLC bindings..."
     sqlc generate
 
