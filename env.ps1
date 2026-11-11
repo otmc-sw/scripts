@@ -6,6 +6,7 @@
 
 
 $global:TOP = Get-Location
+$global:TEST = $true
 
 function e   { Set-Location $TOP; & "$TOP\env.ps1" @args }
 function s   { Set-Location $TOP; & "$TOP\project\setup.ps1" @args }

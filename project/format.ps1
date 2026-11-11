@@ -4,9 +4,17 @@
 # Contributors: Nguyen Van Trung, OTMC Contributors.
 #
 
+param(
+    [switch]$Summary
+)
+
 . "$PSScriptRoot/utils.ps1"
 EnsureTopDirectory
 if ($TOP) { Set-Location -Path $TOP }
+
+if ($TEST) {
+    $TOP = "D:\SCM\GitHub\OTMC\Softwares\dns-provider"
+}
 
 # --- Bắt đầu đo thời gian ---
 $Stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
@@ -143,7 +151,62 @@ function Fast-GetFiles ([string]$RootPath) {
     return $FileList
 }
 
-# --- 4. Main Loop ---
+function Format-Size ([long]$Bytes) {
+    if ($Bytes -ge 1MB) { return ("{0:N2}MB" -f ($Bytes / 1MB)) }
+    if ($Bytes -ge 1KB) { return ("{0:N2}KB" -f ($Bytes / 1KB)) }
+    return "${Bytes}B"
+}
+
+# --- 4. Summary Mode (-s): Thống kê theo loại file ---
+if ($Summary) {
+    $LanguageNames = @{
+        ".go"  = "Golang"
+        ".ts"  = "TypeScript"
+        ".tsx" = "TSX"
+        ".js"  = "JavaScript"
+        ".jsx" = "JSX"
+        ".css" = "CSS"
+    }
+
+    $Stats = [ordered]@{}
+
+    foreach ($Dir in $SrcDirs) {
+        if (-not (Test-Path $Dir)) { continue }
+        foreach ($FilePath in (Fast-GetFiles -RootPath $Dir)) {
+            $ext = [System.IO.Path]::GetExtension($FilePath)
+            $lang = if ($LanguageNames.ContainsKey($ext)) { $LanguageNames[$ext] } else { $ext.TrimStart('.').ToUpper() }
+
+            if (-not $Stats.Contains($lang)) {
+                $Stats[$lang] = [pscustomobject]@{ Language = $lang; Files = 0; Bytes = 0L; Chars = 0L }
+            }
+
+            $Stats[$lang].Files++
+            $Stats[$lang].Bytes += (Get-Item $FilePath).Length
+            $Stats[$lang].Chars += [System.IO.File]::ReadAllText($FilePath).Length
+        }
+    }
+
+    $SummaryRows = $Stats.Values | ForEach-Object {
+        [pscustomobject]@{
+            Language   = $_.Language
+            Files      = $_.Files
+            Size       = Format-Size $_.Bytes
+            Characters = $_.Chars
+        }
+    }
+
+    Write-Host "`n### 📊 File Summary" -ForegroundColor Blue
+    $SummaryRows | Format-Table -AutoSize
+    Write-Host ("Total: {0} files | {1} | {2} characters" -f `
+        (($Stats.Values | Measure-Object Files -Sum).Sum), `
+        (Format-Size (($Stats.Values | Measure-Object Bytes -Sum).Sum)), `
+        (($Stats.Values | Measure-Object Chars -Sum).Sum)) -ForegroundColor Cyan
+
+    $Stopwatch.Stop()
+    exit
+}
+
+# --- 5. Main Loop ---
 $TotalProcessedFiles = 0
 
 foreach ($Dir in $SrcDirs) {
