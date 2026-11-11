@@ -135,6 +135,85 @@ function Show-GoModuleUpdates {
     Write-Host ""
 }
 
+function Write-Table {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Title,
+
+        [Parameter(Mandatory = $true)]
+        [object[]]$Columns,
+
+        [object[]]$Data = @(),
+
+        [object]$Totals,
+
+        [string]$TotalLabel = "TOTAL"
+    )
+
+    function Get-CellValue($Item, [string]$Name) {
+        if ($null -eq $Item) { return "" }
+        if ($Item -is [System.Collections.IDictionary]) { return "$($Item[$Name])" }
+        $prop = $Item.PSObject.Properties[$Name]
+        if ($null -eq $prop) { return "" }
+        return "$($prop.Value)"
+    }
+
+    $rows = @()
+    foreach ($item in @($Data)) {
+        $row = [ordered]@{}
+        foreach ($col in $Columns) { $row[$col.Name] = Get-CellValue $item $col.Name }
+        $rows += ,$row
+    }
+
+    $totalRow = $null
+    if ($null -ne $Totals) {
+        $totalRow = [ordered]@{}
+        foreach ($col in $Columns) { $totalRow[$col.Name] = Get-CellValue $Totals $col.Name }
+        if ($TotalLabel -and $Columns.Count -gt 0) { $totalRow[$Columns[0].Name] = $TotalLabel }
+    }
+
+    $widths = [ordered]@{}
+    foreach ($col in $Columns) {
+        $name = $col.Name
+        $w = $name.Length
+        foreach ($r in $rows) { if ($r[$name].Length -gt $w) { $w = $r[$name].Length } }
+        if ($totalRow -and $totalRow[$name].Length -gt $w) { $w = $totalRow[$name].Length }
+        $widths[$name] = $w
+    }
+
+    function Format-Row($Row) {
+        $cells = foreach ($col in $Columns) {
+            $v = "$($Row[$col.Name])"
+            $w = $widths[$col.Name]
+            if ($col.Align -eq 'Right') { $v.PadLeft($w) } else { $v.PadRight($w) }
+        }
+        return ($cells -join '   ')
+    }
+
+    $headerRow = [ordered]@{}
+    foreach ($col in $Columns) { $headerRow[$col.Name] = $col.Name }
+
+    $innerWidth = 0
+    foreach ($col in $Columns) { $innerWidth += $widths[$col.Name] }
+    $innerWidth += ($Columns.Count - 1) * 3
+    $border = '─' * $innerWidth
+    $indent = '  '
+
+    Write-Host ""
+    Write-Host "$indent$Title" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "$indent$border"
+    Write-Host "$indent$(Format-Row $headerRow)"
+    Write-Host "$indent$border"
+    foreach ($r in $rows) { Write-Host "$indent$(Format-Row $r)" }
+    if ($totalRow) {
+        Write-Host "$indent$border"
+        Write-Host "$indent$(Format-Row $totalRow)" -ForegroundColor Green
+        Write-Host "$indent$border"
+    }
+    Write-Host ""
+}
+
 function Update-GoModules {
     param(
         [Parameter(Mandatory = $true)]

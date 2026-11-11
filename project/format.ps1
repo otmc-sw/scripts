@@ -152,8 +152,8 @@ function Fast-GetFiles ([string]$RootPath) {
 }
 
 function Format-Size ([long]$Bytes) {
-    if ($Bytes -ge 1MB) { return ("{0:N2}MB" -f ($Bytes / 1MB)) }
-    if ($Bytes -ge 1KB) { return ("{0:N2}KB" -f ($Bytes / 1KB)) }
+    if ($Bytes -ge 1MB) { return ("{0:N2} MB" -f ($Bytes / 1MB)) }
+    if ($Bytes -ge 1KB) { return ("{0:N2} KB" -f ($Bytes / 1KB)) }
     return "${Bytes}B"
 }
 
@@ -189,18 +189,36 @@ if ($Summary) {
     $SummaryRows = $Stats.Values | ForEach-Object {
         [pscustomobject]@{
             Language   = $_.Language
-            Files      = $_.Files
+            Files      = $_.Files.ToString("N0")
             Size       = Format-Size $_.Bytes
-            Characters = $_.Chars
+            Characters = $_.Chars.ToString("N0")
         }
     }
 
-    Write-Host "`n### 📊 File Summary" -ForegroundColor Blue
-    $SummaryRows | Format-Table -AutoSize
-    Write-Host ("Total: {0} files | {1} | {2} characters" -f `
-        (($Stats.Values | Measure-Object Files -Sum).Sum), `
-        (Format-Size (($Stats.Values | Measure-Object Bytes -Sum).Sum)), `
-        (($Stats.Values | Measure-Object Chars -Sum).Sum)) -ForegroundColor Cyan
+    $TotalFiles = ($Stats.Values | Measure-Object Files -Sum).Sum
+    $TotalBytes = ($Stats.Values | Measure-Object Bytes -Sum).Sum
+    $TotalChars = ($Stats.Values | Measure-Object Chars -Sum).Sum
+
+    Write-Table `
+        -Title "📊 FILE SUMMARY" `
+        -Columns @(
+            @{ Name = "Language";   Align = "Left"  },
+            @{ Name = "Files";      Align = "Right" },
+            @{ Name = "Size";       Align = "Right" },
+            @{ Name = "Characters"; Align = "Right" }
+        ) `
+        -Data $SummaryRows `
+        -Totals ([pscustomobject]@{
+            Language   = ""
+            Files      = $TotalFiles.ToString("N0")
+            Size       = Format-Size $TotalBytes
+            Characters = $TotalChars.ToString("N0")
+        })
+
+    Write-Host ("  {0} files  |  {1}  |  {2:N0} characters" -f `
+        $TotalFiles,
+        (Format-Size $TotalBytes),
+        $TotalChars) -ForegroundColor Green
 
     $Stopwatch.Stop()
     exit
