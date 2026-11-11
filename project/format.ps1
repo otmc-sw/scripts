@@ -77,6 +77,7 @@ function Test-ShouldKeepComment ([string]$CommentText) {
 
 function Add-LicenseHeaderIfNeeded ([string]$Content, [string]$LicenseType) {
     if ($Content -match '^\s*(//|/\*)') { return $Content }
+    if ($Content -match '^#!') { return $Content }
     return "$($LicenseHeaders[$LicenseType])`n$Content"
 }
 
